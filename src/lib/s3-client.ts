@@ -6,15 +6,15 @@ export const s3 = new S3Client({
   region: env.S3_REGION ?? "auto",
   endpoint: env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: env.S3_ACCESS_KEY_ID,
-    secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+    accessKeyId: env.S3_ACCESS_KEY_ID ?? "",
+    secretAccessKey: env.S3_SECRET_ACCESS_KEY ?? "",
   },
   forcePathStyle: true,
 });
 
 export const generateDownloadUrl = async (key: string) => {
   const command = new GetObjectCommand({
-    Bucket: env.S3_BUCKET,
+    Bucket: env.S3_BUCKET ?? "app",
     Key: key,
   });
 

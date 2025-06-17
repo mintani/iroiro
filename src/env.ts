@@ -9,9 +9,9 @@ export const env = createEnv({
     GITHUB_SECRET: z.string().min(1),
     S3_REGION: z.string().optional(),
     S3_ENDPOINT: z.string().optional(),
-    S3_ACCESS_KEY_ID: z.string().min(1),
-    S3_SECRET_ACCESS_KEY: z.string().min(1),
-    S3_BUCKET: z.string().min(1),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_BUCKET: z.string().optional(),
     ADMIN_USER_IDS: z.string().optional(),
   },
   client: {
