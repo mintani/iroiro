@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Template Project Rule - UI, Auth and best practices
+alwaysApply: true
+---
+
+# Project Rule
+
+This project is a fullstack template using @Better Auth, @Shadcn UI, and @hono
+Follow these rules to ensure consistency, security, and maintainability.
+
+## Environment
+- Use docker compose for database (postgres)
+- Access database via ORM (prisma)
+- Always use pnpm (especially pnpx instead of npx)
+- All the environment variables declared in @env.ts (check zod schema).
+
+## UI/UX
+- Always use shadcn/ui components for UI. If customization is needed, follow shadcn/ui's open code and composition principles.
+- Do not write component manually in `src/components/ui`. Modify after add via cli.
+- Shadcn/ui components can add via cli `pnpx shadcn@latest add <component> (<component>...)` (Be careful! `shadcn-ui` is now deprecated.)
+- Keep the design BEST quality ,product-ready, unified, and accessible.
+- Use absolute imports with `@/` alias when possible.
+- When implement Skeleton of component, declare like following: `{YOUR COMPONENT NAME}.Skeleton`
+
+## API
+- Using Hono ([route.ts](mdc:src/app/api/auth/[...all]/route.ts)) and Hono RPC ([hono.ts](mdc:src/lib/hono.ts)). Implement REST route with it.
+- But in case that need to use next.js api route (e.g. better-auth endpoint), it's OK.
+
+## Authentication & Authorization
+- Use Better-Auth for all authentication and role-based access control.
+- Protect proper routes with proper authorization checks.
+- Do not use next.js middleware. It may cause major security issues.
+
+## Code Style & Quality
+- Use TypeScript, ESLint, and Prettier for type safety and code consistency.
+- Keep comments minimal and only where necessary for understanding.
+- Must use arrow function but in case `export default`, write non-arrow-functions.
+- Avoid redundant code and unnecessary dependencies.
+- Use pnpm/pnpx for package management and script execution.
+- Organize components in `src/components/*` or `src/app/..<page>../_components/*`.
+- Organize hooks in `src/hooks`.
+- File name should be in style of `hyphens-case`. 
+
+## Commit & PR
+- Write concise commit messages in English.
+- Use prefix (e.g. `feat: `,`chore: `,`chore(deps): `,`refactor: `)
+- Keep PRs small and focused, with clear descriptions and impact.
+
+## General
+- When in doubt, follow industry standards.
+- Maintain a balance between playful UI and professional quality, best practices
+
+[auth.ts](mdc:src/lib/auth.ts)
+[auth-client.ts](mdc:src/lib/auth-client.ts)
