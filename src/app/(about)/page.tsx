@@ -1,3 +1,4 @@
+import { CopyButton } from "@/components/misc/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -196,10 +197,14 @@ export default function AboutPage() {
                 Clone the repository and start building your next project
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-muted p-4 font-mono text-sm">
-                <div className="text-muted-foreground"># Clone the repository</div>
-                <div>git clone https://github.com/caru-ini/fullstack-template.git</div>
+            <CardContent className="flex flex-col items-center justify-center space-y-4">
+              <div className="relative rounded-lg bg-muted p-3 font-mono text-sm">
+                <div className="flex items-center justify-between gap-x-4">
+                  <div>git clone https://github.com/caru-ini/fullstack-template.git</div>
+                  <CopyButton
+                    text={"git clone https://github.com/caru-ini/fullstack-template.git"}
+                  />
+                </div>
               </div>
               <div className="flex justify-center">
                 <Button asChild>
