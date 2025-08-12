@@ -19,11 +19,11 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    nextCookies(),
     admin({
       adminRoles: ["admin", "superadmin"],
       adminUserIds,
     }),
+    nextCookies(),
   ],
 });
 
