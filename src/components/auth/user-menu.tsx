@@ -85,7 +85,7 @@ export const UserMenu = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-          <LogOut className="mr-2 size-4" /> Sign Out
+          <LogOut className="mr-2 size-4" /> Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

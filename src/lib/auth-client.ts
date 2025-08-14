@@ -13,11 +13,13 @@ export type Session = typeof client.$Infer.Session;
 
 const providersMap = {
   github: {
-    name: "GitHub",
+    name: "github",
+    displayName: "GitHub",
     icon: SiGithub,
   },
   google: {
-    name: "Google",
+    name: "google",
+    displayName: "Google",
     icon: SiGoogle,
   },
 } as const;
@@ -26,6 +28,7 @@ export const getProviderMap = (provider: string) => {
   return (
     providersMap?.[provider as keyof typeof providersMap] ?? {
       name: provider,
+      displayName: provider,
       icon: Plug,
     }
   );
