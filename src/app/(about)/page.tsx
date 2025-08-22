@@ -132,32 +132,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16" id="features">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold">Everything you need</h2>
-            <p className="text-lg text-muted-foreground">
-              Built with modern tools and best practices for scalable applications
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-muted/40 transition-colors hover:border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm leading-relaxed">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Tech Stack Section */}
       <section className="container mx-auto px-4 py-16" id="tech-stack">
         <div className="mx-auto max-w-6xl">
@@ -199,6 +173,32 @@ export default function AboutPage() {
                     </Link>
                   </Button>
                 </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="container mx-auto px-4 py-16" id="features">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold">Everything you need</h2>
+            <p className="text-lg text-muted-foreground">
+              Built with modern tools and best practices for scalable applications
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature, index) => (
+              <Card key={index} className="border-muted/40 transition-colors hover:border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm leading-relaxed">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
               </Card>
             ))}
           </div>
