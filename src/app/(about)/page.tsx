@@ -9,8 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, Check, Code2, Database, Lock, Palette, Server, Zap } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  Check,
+  Code2,
+  Database,
+  Lock,
+  Palette,
+  Server,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
+import { SiGithub } from "react-icons/si";
 
 const libraries = [
   {
@@ -105,9 +116,16 @@ export default function AboutPage() {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button size="lg" asChild>
-              <Link href="https://github.com/caru-ini/fullstack-template">
-                Get Started
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Link className="inline-flex gap-x-2" href="#getting-started" scroll={false}>
+                <ArrowDown className="size-4" /> Get Started
+              </Link>
+            </Button>
+            <Button size="lg" variant="secondary" asChild>
+              <Link
+                className="inline-flex gap-x-2"
+                href="https://github.com/caru-ini/fullstack-template"
+              >
+                <SiGithub /> View Repository
               </Link>
             </Button>
           </div>
@@ -115,7 +133,7 @@ export default function AboutPage() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16" id="features">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold">Everything you need</h2>
@@ -141,7 +159,7 @@ export default function AboutPage() {
       </section>
 
       {/* Tech Stack Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16" id="tech-stack">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold">Built with the best</h2>
@@ -188,7 +206,7 @@ export default function AboutPage() {
       </section>
 
       {/* Getting Started Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="container mx-auto px-4 py-16" id="getting-started">
         <div className="mx-auto max-w-4xl">
           <Card className="border-muted/40">
             <CardHeader className="text-center">
