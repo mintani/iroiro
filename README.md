@@ -1,53 +1,49 @@
-# 🚀 Fullstack Template
+# Fullstack Template
 
-A modern, production-ready fullstack template built with Next.js, featuring authentication, database integration, and beautiful UI components.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9.x-f69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+[![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev)
+[![Hono](https://img.shields.io/badge/Hono-4.x-ff6a00)](https://hono.dev)
+[![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Better Auth](https://img.shields.io/badge/Better%20Auth-1.x-111111)](https://www.better-auth.com/)
+[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-ready-000000)](https://ui.shadcn.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## ✨ Features
+A modern, production-ready fullstack template built with Next.js, Hono, Better Auth, Prisma, and shadcn/ui. Type-safe, performance-oriented, and designed for fast onboarding.
 
-- 🔐 **Authentication** - Secure authentication with Better Auth
-- 🎨 **Modern UI** - Beautiful components with Shadcn UI and Tailwind CSS
-- 🗄️ **Database** - PostgreSQL with Prisma ORM
-- 🌐 **API** - Type-safe API routes with Hono
-- 🌙 **Dark Mode** - Built-in theme switching
-- 📱 **Responsive** - Mobile-first design
-- 🔒 **Type Safety** - Full TypeScript support
-- 🚀 **Performance** - Optimized with Next.js 15 and Turbo
-- 📦 **File Upload** - AWS S3 integration ready
-- 🔧 **Developer Experience** - ESLint, Prettier, Husky pre-commit hooks
+---
 
-## 🛠️ Tech Stack
+## Why this template
 
-### Frontend
+- Focused stack: Next.js App Router + Hono RPC for typed server communication
+- Production-ready auth: Better Auth with RBAC-ready scaffolding
+- Database first: PostgreSQL via Prisma, Docker Compose provided
+- Polished UI/UX: shadcn/ui + Tailwind with dark mode and accessible patterns
+- Developer experience: pnpm, ESLint, Prettier, Husky, and strict TypeScript
 
-- **Framework**: Next.js 15 with React 19
-- **Styling**: Tailwind CSS 4
-- **UI Components**: Shadcn UI with Radix UI primitives
-- **Icons**: Lucide React & React Icons
-- **Theme**: Next Themes for dark/light mode
+## Features
 
-### Backend
+- Authentication with Better Auth (GitHub OAuth ready)
+- Type-safe API routes with Hono (RPC and REST)
+- PostgreSQL with Prisma ORM
+- UI components with shadcn/ui and Radix UI
+- Dark/light theme via next-themes
+- Optional S3 file upload (AWS S3 or MinIO)
+- Full TypeScript and strict checks
 
-- **API**: Hono with type-safe RPC
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Better Auth
-- **File Storage**: AWS S3 (optional)
-- **Validation**: Zod schemas
+## Tech Stack
 
-### Development
+- Frontend: Next.js 15, React 19, Tailwind CSS 4, shadcn/ui, Lucide Icons
+- Backend: Hono 4 (RPC ready), Better Auth, Zod validation
+- Data: PostgreSQL, Prisma 6
+- Tooling: TypeScript 5, pnpm, ESLint 9, Prettier 3, Husky, lint-staged
 
-- **Language**: TypeScript
-- **Package Manager**: pnpm
-- **Linting**: ESLint with Next.js config
-- **Formatting**: Prettier with plugins
-- **Git Hooks**: Husky with lint-staged
-- **AI-Ready**: Pre-configured cursor rules
-- **Environment**: T3 Env for type-safe environment variables
-
-## 📸 Screenshot
+## Screenshot
 
 ![Application Screenshot](docs/screenshot.png)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -55,146 +51,115 @@ A modern, production-ready fullstack template built with Next.js, featuring auth
 - pnpm
 - Docker & Docker Compose (for database)
 
-### Installation
+### Setup
 
-1. **Clone the repository**
+1. Clone and install
 
-   ```bash
-   git clone https://github.com/caru-ini/fullstack-template
-   cd fullstack-template
-   ```
+```bash
+git clone https://github.com/caru-ini/fullstack-template
+cd fullstack-template
+pnpm install
+```
 
-   or
+1. Environment variables
 
-   ```bash
-   gh repo clone caru-ini/fullstack-template
-   cd fullstack-template
-   ```
+```bash
+cp .env.example .env
+# Generate a secret for Better Auth
+pnpx @better-auth/cli secret
+```
 
-2. **Install dependencies**
+Fill in `.env` according to your environment. The keys are validated by `src/env.ts` (T3 Env).
 
-   ```bash
-   pnpm install
-   ```
+1. Start services
 
-3. **Set up environment variables**
+```bash
+docker compose up -d
+```
 
-   ```bash
-   cp .env.example .env
-   ```
+1. Generate Prisma schema from Better Auth
 
-   Fill in your environment variables in `.env`
+```bash
+pnpx @better-auth/cli generate
+```
 
-   To generate `BETTER_AUTH_SECRET`, run:
+1. Push database schema
 
-   ```bash
-   pnpx @better-auth/cli secret
-   ```
+```bash
+pnpm db db push  # or: pnpm dlx prisma db push
+```
 
-4. **Start the database**
+1. Start the dev server
 
-   ```bash
-   docker compose up -d
-   ```
+```bash
+pnpm dev
+```
 
-5. **Generate Prisma schema with better-auth**
+Visit http://localhost:3000
 
-   ```bash
-   pnpx @better-auth/cli generate
-   ```
-
-6. **Set up the database**
-
-   ```bash
-   pnpm db db push # or prisma db push
-   ```
-
-7. **Start the development server**
-
-   ```bash
-   pnpm dev
-   ```
-
-Visit [http://localhost:3000](http://localhost:3000) to see your application running! 🎉
-
-## 📝 Available Scripts
+## Available Scripts
 
 | Script | Description |
 |--------|-------------|
-| `pnpm dev` | Start development server with Turbo |
+| `pnpm dev` | Start development server (Turbo) |
 | `pnpm build` | Build for production |
 | `pnpm start` | Start production server |
 | `pnpm preview` | Build and start production server |
 | `pnpm lint` | Run ESLint |
 | `pnpm lint:fix` | Fix ESLint issues |
-| `pnpm typecheck` | Run TypeScript type checking |
+| `pnpm typecheck` | TypeScript type checking |
 | `pnpm fmt:check` | Check code formatting |
 | `pnpm fmt:write` | Format code with Prettier |
-| `pnpm check` | Run linting and type checking |
-| `pnpm db` | Prisma CLI commands |
+| `pnpm check` | Linting and type checking |
+| `pnpm db` | Prisma CLI |
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```plaintext
 src/
 ├── app/                    # Next.js App Router
-│   ├── (about)/           # Route groups
-│   ├── api/               # API routes
-│   │   ├── [[...route]]/  # Hono API routes
-│   │   └── auth/          # Better Auth endpoints
-│   └── globals.css        # Global styles
-├── components/            # Reusable components
-│   ├── auth/             # Authentication components
-│   ├── layout/           # Layout components
-│   ├── misc/             # Miscellaneous components
-│   ├── providers/        # Context providers
-│   └── ui/               # Shadcn UI components
-├── lib/                  # Utility libraries
-│   ├── auth.ts           # Better Auth configuration
-│   ├── auth-client.ts    # Client-side auth utilities
-│   ├── db.ts             # Database connection
-│   ├── hono.ts           # Hono client setup
-│   ├── s3-client.ts      # S3 client setup
-│   └── utils.ts          # Utility functions
-└── env.ts                # Environment variable validation
+│   ├── (about)/            # Route groups
+│   ├── api/                # API routes
+│   │   ├── [[...route]]/   # Hono API routes
+│   │   └── auth/           # Better Auth endpoints
+│   └── globals.css         # Global styles
+├── components/             # Reusable components
+│   ├── auth/               # Authentication components
+│   ├── layout/             # Layout components
+│   ├── misc/               # Miscellaneous components
+│   ├── providers/          # Context providers
+│   └── ui/                 # shadcn/ui components
+├── lib/                    # Utilities
+│   ├── auth.ts             # Better Auth configuration
+│   ├── auth-client.ts      # Client-side auth utilities
+│   ├── db.ts               # Database connection
+│   ├── hono.ts             # Hono client setup
+│   ├── s3-client.ts        # S3 client setup
+│   └── utils.ts            # Utility functions
+└── env.ts                  # Environment variable validation
 ```
 
-## 🚀 Deployment
+## Deployment
 
-### Vercel (Recommended)
+### Vercel (recommended)
 
 1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Set up environment variables in Vercel dashboard
-4. Deploy automatically on every push
+1. Connect the repository to Vercel
+1. Set environment variables in the Vercel dashboard
+1. Deploy on every push
 
-### Docker
-
-```bash
-# Build the image
-docker build -t fullstack-template .
-
-# Run the container
-docker run -p 3000:3000 fullstack-template
-```
-
-## 🤝 Contributing
-
-Any pull requests/issues are welcome!
+## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Create your feature branch (`git checkout -b feature/amazing-feature`)
+1. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+1. Push to the branch (`git push origin feature/amazing-feature`)
+1. Open a Pull Request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
-<div align="center">
-  <p>Made with ❤️ by caru-ini for the developer community</p>
-  <p>⭐ Star this repo if you find it helpful!</p>
-</div>
+If this project helps you, please consider giving it a star.
