@@ -1,5 +1,6 @@
 # Fullstack Template
 
+[![CI](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml/badge.svg)](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9.x-f69220?logo=pnpm&logoColor=white)](https://pnpm.io)
 [![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js)](https://nextjs.org/)
@@ -112,6 +113,31 @@ Visit http://localhost:3000
 | `pnpm fmt:write` | Format code with Prettier |
 | `pnpm check` | Linting and type checking |
 | `pnpm db` | Prisma CLI |
+
+## Continuous Integration
+
+- Workflow: `.github/workflows/ci.yaml` ([view on GitHub](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml))
+- Triggers: `push` to `main`, `pull_request`
+- Steps:
+  - Install dependencies with pnpm
+  - Prettier format check (`pnpm fmt:check`)
+  - ESLint (`pnpm lint`)
+  - TypeScript typecheck (`pnpm typecheck`)
+  - Build (`pnpm build`)
+
+### Reproduce CI locally
+
+```bash
+pnpm install &&
+pnpm fmt:check &&
+pnpm lint &&
+pnpm typecheck &&
+pnpm build
+```
+
+Notes:
+
+- The CI sets dummy environment variables to satisfy build-time validation. When building locally, copy `.env.example` to `.env` and fill required keys.
 
 ## Project Structure
 
