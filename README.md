@@ -29,14 +29,15 @@ A modern, production-ready fullstack template built with Next.js, Hono, Better A
 - Type-safe API routes with Hono (RPC and REST)
 - PostgreSQL with Prisma ORM
 - UI components with shadcn/ui and Radix UI
+- Beautiful progress bar with bprogress/next
 - Dark/light theme via next-themes
 - Optional S3 file upload (AWS S3 or MinIO)
 - Full TypeScript and strict checks
 
 ## Tech Stack
 
-- Frontend: Next.js 15, React 19, Tailwind CSS 4, shadcn/ui, Lucide Icons
-- Backend: Hono 4 (RPC ready), Better Auth, Zod validation
+- Frontend: Next.js 15, React 19, Tailwind CSS 4, shadcn/ui, Lucide Icons, React Icons
+- Backend: Hono (RPC ready), Better Auth, Zod validation
 - Data: PostgreSQL, Prisma 6
 - Tooling: TypeScript 5, pnpm, ESLint 9, Prettier 3, Husky, lint-staged
 
