@@ -27,13 +27,14 @@ export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "dropdown
 
   return variant === "icon" ? (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       aria-label="Toggle theme"
       onClick={() => setTheme(current === "dark" ? "light" : "dark")}
+      className="size-24 p-4 text-center text-5xl font-bold tracking-tight text-primary"
     >
-      <Sun className="size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-      <Moon className="absolute size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+      <Sun className="size-8 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+      <Moon className="absolute size-8 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
       <span className="sr-only">Toggle theme</span>
     </Button>
   ) : (
@@ -42,12 +43,12 @@ export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "dropdown
         <Button
           variant="ghost"
           aria-label="Toggle theme"
-          className="flex items-center rounded-full px-2"
+          className="glass flex items-center rounded-md"
         >
           <div className="flex items-center">
             <div className="relative">
-              <Sun className="size-5 scale-100 transition-transform duration-300 dark:scale-0 dark:-rotate-90" />
-              <Moon className="absolute inset-0 size-5 scale-0 -rotate-90 transition-transform duration-300 dark:scale-100 dark:rotate-0" />
+              <Sun className="size-8 scale-100 transition-transform duration-300 dark:scale-0 dark:-rotate-90" />
+              <Moon className="absolute inset-0 size-8 scale-0 -rotate-90 transition-transform duration-300 dark:scale-100 dark:rotate-0" />
             </div>
           </div>
           <ChevronDown className="size-5" />

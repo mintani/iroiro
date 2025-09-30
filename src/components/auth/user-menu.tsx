@@ -51,9 +51,13 @@ export const UserMenu = () => {
             callbackURL: "/",
           })
         }
-        variant="outline"
+        variant="ghost"
+        size="icon"
+        className="glass size-24 rounded-md p-4 text-center text-5xl font-bold tracking-tight text-primary"
+        aria-label="Sign in"
+        title="Sign in"
       >
-        Sign in
+        <span className="text-sm font-semibold">in</span>
       </Button>
     );
   }
@@ -61,7 +65,7 @@ export const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="glass rounded-md" aria-label="User menu">
           <Avatar className="size-9 select-none">
             <AvatarImage {...imageProps} />
             <AvatarFallback>

@@ -120,3 +120,123 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Grid background utility */
+.bg-grid {
+  --grid-size: 24px;
+  --grid-line: color-mix(in oklch, var(--border) 30%, transparent);
+  --grid-bg: color-mix(in oklch, var(--background) 30%, transparent);
+
+  background-color: var(--grid-bg);
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Playful glass + controls */
+.glass {
+  background:
+    linear-gradient(0deg, var(--glass-tint, transparent), var(--glass-tint, transparent)),
+    color-mix(in oklch, var(--background) 40%, transparent);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 10px 25px oklch(0 0 0 / 0.06),
+    inset 0 1px 0 oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+
+.pill {
+  border-radius: 9999px;
+}
+
+.slider {
+  appearance: none;
+  height: 8px;
+  border-radius: 9999px;
+  background: #b4b4b4;
+  outline: none;
+}
+.slider--accent {
+  background: linear-gradient(
+    90deg,
+    oklch(0.96 0.11 24) 0%,
+    oklch(0.94 0.12 140) 50%,
+    oklch(0.94 0.12 260) 100%
+  );
+}
+.slider--hue {
+  background: linear-gradient(
+    90deg,
+    #ff0000 0%,
+    #ffff00 17%,
+    #00ff00 33%,
+    #00ffff 50%,
+    #0000ff 67%,
+    #ff00ff 83%,
+    #ff0000 100%
+  );
+}
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: oklch(0.98 0.03 260);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.25);
+  cursor: pointer;
+}
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: oklch(0.98 0.03 260);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.25);
+  cursor: pointer;
+}
+
+.number-input {
+  @apply h-8 rounded-md border px-3 text-xs;
+  background: color-mix(in oklch, var(--background) 85%, transparent);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2);
+}
+.number-input:focus {
+  @apply ring-2 ring-primary/30 outline-none;
+}
+
+/* Glass tint helpers */
+.tint-sky {
+  --glass-tint: oklch(0.95 0.08 230 / 0.18);
+}
+.tint-emerald {
+  --glass-tint: oklch(0.95 0.08 150 / 0.18);
+}
+.tint-amber {
+  --glass-tint: oklch(0.95 0.08 80 / 0.18);
+}
+.tint-fuchsia {
+  --glass-tint: oklch(0.95 0.08 330 / 0.18);
+}
+.tint-indigo {
+  --glass-tint: oklch(0.95 0.08 280 / 0.18);
+}
+.tint-stone {
+  --glass-tint: oklch(0.95 0.01 270 / 0.14);
+}
+.tint-rose {
+  --glass-tint: oklch(0.95 0.08 20 / 0.18);
+}
+.tint-teal {
+  --glass-tint: oklch(0.95 0.08 200 / 0.18);
+}
+.tint-violet {
+  --glass-tint: oklch(0.95 0.08 310 / 0.18);
+}
+.tint-gray {
+  --glass-tint: oklch(0.98 0.01 270 / 0.1);
+}
