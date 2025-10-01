@@ -37,8 +37,8 @@ export const VisualPieChart: React.FC<{ sourceId?: string }> = ({ sourceId = "qu
   }, [rec]);
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <canvas ref={ref} className="rounded-md border" />
+    <div className="flex items-center justify-center">
+      <canvas ref={ref} width={160} height={160} className="rounded-md border" />
     </div>
   );
 };

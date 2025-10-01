@@ -1,6 +1,6 @@
 import { useImageBus } from "@/components/providers/image-bus";
 import { Button } from "@/components/ui/button";
-import { Image as ImageIcon, Plus, Trash2, Upload } from "lucide-react";
+import { Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import NextImage from "next/image";
 import React from "react";
 
@@ -22,6 +22,7 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
       setFile(selectedFile ?? null);
 
       if (selectedFile) {
+        bus.setLoading(true, "Loading image...");
         const url = URL.createObjectURL(selectedFile);
         setPreviewUrl(url);
         // Also write into ImageBus as data URL
@@ -29,7 +30,15 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
         reader.onload = () => {
           if (typeof reader.result === "string") {
             bus.setImage(id, reader.result);
+            // Keep loading for a bit to allow sampler to start loading
+            setTimeout(() => {
+              bus.setLoading(false);
+            }, 300);
           }
+        };
+        reader.onerror = () => {
+          setError("Failed to load image");
+          bus.setLoading(false);
         };
         reader.readAsDataURL(selectedFile);
       } else {
@@ -86,7 +95,7 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
   }, [handleFileChange]);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col gap-2">
       <input
         ref={inputRef}
         type="file"
@@ -106,34 +115,46 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
           }}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
-          className="relative flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-background/60 transition hover:bg-accent/40"
+          className="glass relative flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed transition-all hover:border-foreground/20"
           aria-label="Upload image via click, drag-and-drop or paste"
         >
-          <div className="pointer-events-none flex flex-col items-center gap-2 px-3 text-center">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <ImageIcon className="size-5" />
-              <span className="text-xs">Drop image or click to browse</span>
+          <div className="pointer-events-none flex flex-col items-center gap-3 px-3 text-center">
+            <ImageIcon className="size-12 text-muted-foreground/40" />
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-foreground">Upload Image</span>
+              <span className="text-xs text-muted-foreground">
+                Drop image, click to browse, or paste (Ctrl+V)
+              </span>
             </div>
             <div className="text-[10px] text-muted-foreground">PNG, JPG, WEBP up to 10MB</div>
-            <div className="mt-1">
-              <Button size="sm" variant="outline" className="h-7 px-3 text-xs">
-                <Plus className="mr-1 size-3" /> Choose
-              </Button>
-            </div>
           </div>
         </div>
       )}
 
       {previewUrl && (
-        <div className="relative mt-1 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-muted/40">
-          <div className="flex items-center justify-between border-b bg-background/70 px-2 py-1.5">
-            <div className="truncate text-xs text-muted-foreground">
-              {file?.name ?? "Selected image"}
-              {file?.size ? ` • ${(file.size / 1024).toFixed(0)} KB` : ""}
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <div className="glass flex items-center justify-between rounded-md border bg-background/60 px-3 py-2 backdrop-blur">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="size-4 text-muted-foreground" />
+              <div className="flex flex-col">
+                <div className="truncate text-xs font-medium text-foreground">
+                  {file?.name ?? "Selected image"}
+                </div>
+                {file?.size && (
+                  <div className="text-[10px] text-muted-foreground">
+                    {(file.size / 1024).toFixed(0)} KB
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-                <Upload className="mr-1 size-4" /> Replace
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => inputRef.current?.click()}
+                className="h-7 px-2 text-xs"
+              >
+                <Upload className="size-3" />
               </Button>
               <Button
                 size="sm"
@@ -143,14 +164,20 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
                   setPreviewUrl(null);
                   setSuccess(false);
                   setError(null);
+                  bus.remove(id);
+                  // Reset file input to allow re-uploading the same file
+                  if (inputRef.current) {
+                    inputRef.current.value = "";
+                  }
                 }}
+                className="h-7 px-2 text-xs"
               >
-                <Trash2 className="mr-1 size-4" /> Clear
+                <Trash2 className="size-3" />
               </Button>
             </div>
           </div>
-          <div className="relative flex min-h-0 flex-1 items-center justify-center bg-muted">
-            <div className="relative h-full w-full">
+          <div className="glass relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md border">
+            <div className="relative h-full w-full bg-muted/20">
               {previewUrl && (
                 <NextImage
                   src={previewUrl}
@@ -162,14 +189,11 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between bg-background/60 px-2 py-1.5">
-            <div className="text-[10px] text-muted-foreground">Press Ctrl+V to paste image</div>
-          </div>
         </div>
       )}
 
-      {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
-      {success && <div className="text-success mt-2 text-xs">Upload successful!</div>}
+      {error && <div className="text-xs text-destructive">{error}</div>}
+      {success && <div className="text-xs text-green-600">Upload successful!</div>}
     </div>
   );
 };

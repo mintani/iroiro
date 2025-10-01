@@ -23,6 +23,29 @@ export const EffectColorAdjustment: React.FC<Props> = ({ inId, outId }) => {
   const [openIn, setOpenIn] = React.useState(false);
   const [openOut, setOpenOut] = React.useState(false);
 
+  // Track previous dataUrl to detect removal
+  const prevDataUrlRef = React.useRef<string | undefined>(undefined);
+
+  // Reset output when input is removed
+  React.useEffect(() => {
+    const currentRec = bus.get(inId);
+    const currentDataUrl = currentRec?.dataUrl;
+
+    // Only act when dataUrl changes from existing to non-existing
+    if (prevDataUrlRef.current && !currentDataUrl) {
+      const outputRec = bus.get(outId);
+      if (outputRec) {
+        bus.remove(outId);
+      }
+      setError(null);
+      setBrightness(0);
+      setContrast(0);
+      setSaturation(0);
+    }
+
+    prevDataUrlRef.current = currentDataUrl;
+  });
+
   const apply = async () => {
     if (!rec?.dataUrl) {
       setError("No input image.");
@@ -65,10 +88,10 @@ export const EffectColorAdjustment: React.FC<Props> = ({ inId, outId }) => {
 
   return (
     <div className="flex h-full w-full flex-col gap-2">
-      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div>
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <div className="flex min-h-0 flex-col">
           <div className="mb-1">IN</div>
-          <div className="glass relative flex h-60 items-center justify-center overflow-hidden rounded-md border">
+          <div className="glass relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md border">
             {rec?.dataUrl ? (
               <NextImage
                 src={rec.dataUrl}
@@ -83,9 +106,9 @@ export const EffectColorAdjustment: React.FC<Props> = ({ inId, outId }) => {
             )}
           </div>
         </div>
-        <div>
+        <div className="flex min-h-0 flex-col">
           <div className="mb-1">OUT</div>
-          <div className="glass relative flex h-60 items-center justify-center overflow-hidden rounded-md border">
+          <div className="glass relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md border">
             {outRec?.dataUrl ? (
               <NextImage
                 src={outRec.dataUrl}
@@ -101,88 +124,66 @@ export const EffectColorAdjustment: React.FC<Props> = ({ inId, outId }) => {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-3 items-center gap-2 text-xs text-muted-foreground">
-        <label className="flex items-center gap-2">
-          <span className="w-16">Brightness</span>
-          <input
-            type="range"
-            min={-100}
-            max={100}
-            value={brightness}
-            onChange={(e) => setBrightness(parseInt(e.target.value, 10))}
-            className="slider w-full"
-          />
-          <input
-            type="number"
-            className="number-input w-16"
-            value={brightness}
-            min={-100}
-            max={100}
-            onChange={(e) => setBrightness(parseInt(e.target.value || "0", 10))}
-          />
-        </label>
-        <label className="flex items-center gap-2">
-          <span className="w-16">Contrast</span>
-          <input
-            type="range"
-            min={-100}
-            max={100}
-            value={contrast}
-            onChange={(e) => setContrast(parseInt(e.target.value, 10))}
-            className="slider w-full"
-          />
-          <input
-            type="number"
-            className="number-input w-16"
-            value={contrast}
-            min={-100}
-            max={100}
-            onChange={(e) => setContrast(parseInt(e.target.value || "0", 10))}
-          />
-        </label>
-        <label className="flex items-center gap-2">
-          <span className="w-16">Saturation</span>
-          <input
-            type="range"
-            min={-100}
-            max={100}
-            value={saturation}
-            onChange={(e) => setSaturation(parseInt(e.target.value, 10))}
-            className="slider w-full"
-          />
-          <input
-            type="number"
-            className="number-input w-16"
-            value={saturation}
-            min={-100}
-            max={100}
-            onChange={(e) => setSaturation(parseInt(e.target.value || "0", 10))}
-          />
-        </label>
+      <div className="flex w-full items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <label className="flex items-center gap-1">
+            <span className="w-12">Bright</span>
+            <input
+              type="number"
+              className="number-input h-7 w-14"
+              value={brightness}
+              min={-100}
+              max={100}
+              onChange={(e) => setBrightness(parseInt(e.target.value || "0", 10))}
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            <span className="w-12">Contrast</span>
+            <input
+              type="number"
+              className="number-input h-7 w-14"
+              value={contrast}
+              min={-100}
+              max={100}
+              onChange={(e) => setContrast(parseInt(e.target.value || "0", 10))}
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            <span className="w-12">Saturate</span>
+            <input
+              type="number"
+              className="number-input h-7 w-14"
+              value={saturation}
+              min={-100}
+              max={100}
+              onChange={(e) => setSaturation(parseInt(e.target.value || "0", 10))}
+            />
+          </label>
+        </div>
+        <div className="flex w-auto flex-0 gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="pill"
+            onClick={() => {
+              setBrightness(0);
+              setContrast(0);
+              setSaturation(0);
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            size="sm"
+            onClick={apply}
+            disabled={running || !rec?.dataUrl}
+            className="glass pill px-4 text-foreground"
+          >
+            {running ? "Applying..." : "Apply"}
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          onClick={apply}
-          disabled={running || !rec?.dataUrl}
-          className="glass pill px-4 text-foreground"
-        >
-          {running ? "Applying..." : "Apply"}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="pill"
-          onClick={() => {
-            setBrightness(0);
-            setContrast(0);
-            setSaturation(0);
-          }}
-        >
-          Reset
-        </Button>
-        {error && <span className="text-xs text-destructive">{error}</span>}
-      </div>
+      {error && <div className="text-xs text-destructive">{error}</div>}
       {rec?.dataUrl && (
         <ImageModal src={rec.dataUrl} open={openIn} onOpenChange={setOpenIn} title="IN" />
       )}

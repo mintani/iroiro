@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { client, useSession } from "@/lib/auth-client";
-import { LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 import { getImageProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ export const UserMenu = () => {
   }, [router]);
 
   if (isPending) {
-    return <Skeleton className="size-9 rounded-full" />;
+    return <Skeleton className="size-20" />;
   }
 
   if (!session?.user) {
@@ -52,12 +52,11 @@ export const UserMenu = () => {
           })
         }
         variant="ghost"
-        size="icon"
-        className="glass size-24 rounded-md p-4 text-center text-5xl font-bold tracking-tight text-primary"
+        className="size-20 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
         aria-label="Sign in"
         title="Sign in"
       >
-        <span className="text-sm font-semibold">in</span>
+        <LogIn className="size-8" />
       </Button>
     );
   }
@@ -65,8 +64,12 @@ export const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="glass rounded-md" aria-label="User menu">
-          <Avatar className="size-9 select-none">
+        <Button
+          variant="ghost"
+          className="size-20 text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+          aria-label="User menu"
+        >
+          <Avatar className="size-12 select-none">
             <AvatarImage {...imageProps} />
             <AvatarFallback>
               {isPending ? (

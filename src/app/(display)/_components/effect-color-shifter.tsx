@@ -21,6 +21,27 @@ export const EffectColorShifter: React.FC<Props> = ({ inId, outId }) => {
   const [openIn, setOpenIn] = React.useState(false);
   const [openOut, setOpenOut] = React.useState(false);
 
+  // Track previous dataUrl to detect removal
+  const prevDataUrlRef = React.useRef<string | undefined>(undefined);
+
+  // Reset output when input is removed
+  React.useEffect(() => {
+    const currentRec = bus.get(inId);
+    const currentDataUrl = currentRec?.dataUrl;
+
+    // Only act when dataUrl changes from existing to non-existing
+    if (prevDataUrlRef.current && !currentDataUrl) {
+      const outputRec = bus.get(outId);
+      if (outputRec) {
+        bus.remove(outId);
+      }
+      setError(null);
+      setHue(0);
+    }
+
+    prevDataUrlRef.current = currentDataUrl;
+  });
+
   const apply = async () => {
     if (!rec?.dataUrl) {
       setError("No input image.");
@@ -62,10 +83,10 @@ export const EffectColorShifter: React.FC<Props> = ({ inId, outId }) => {
 
   return (
     <div className="flex h-full w-full flex-col gap-2">
-      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-        <div>
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <div className="flex min-h-0 flex-col">
           <div className="mb-1">IN</div>
-          <div className="glass relative flex h-60 items-center justify-center overflow-hidden rounded-md border">
+          <div className="glass relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md border">
             {rec?.dataUrl ? (
               <NextImage
                 src={rec.dataUrl}
@@ -80,9 +101,9 @@ export const EffectColorShifter: React.FC<Props> = ({ inId, outId }) => {
             )}
           </div>
         </div>
-        <div>
+        <div className="flex min-h-0 flex-col">
           <div className="mb-1">OUT</div>
-          <div className="glass relative flex h-60 items-center justify-center overflow-hidden rounded-md border">
+          <div className="glass relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md border">
             {outRec?.dataUrl ? (
               <NextImage
                 src={outRec.dataUrl}
@@ -98,40 +119,42 @@ export const EffectColorShifter: React.FC<Props> = ({ inId, outId }) => {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 text-xs text-muted-foreground">
-        <span className="w-20">Hue</span>
-        <input
-          type="range"
-          min={-180}
-          max={180}
-          value={hue}
-          onChange={(e) => setHue(parseInt(e.target.value, 10))}
-          className="slider"
-        />
-        <span className="w-10 text-right">{hue}°</span>
-        <input
-          type="number"
-          className="number-input w-16"
-          value={hue}
-          min={-180}
-          max={180}
-          onChange={(e) => setHue(parseInt(e.target.value || "0", 10))}
-        />
+      <div className="flex w-full items-center gap-2">
+        <div className="flex flex-1 items-center gap-2 text-xs text-muted-foreground">
+          <span className="w-8">Hue</span>
+          <input
+            type="range"
+            min={-180}
+            max={180}
+            value={hue}
+            onChange={(e) => setHue(parseInt(e.target.value, 10))}
+            className="slider flex-1"
+          />
+          <span className="w-10 text-right">{hue}°</span>
+          <input
+            type="number"
+            className="number-input h-7 w-14"
+            value={hue}
+            min={-180}
+            max={180}
+            onChange={(e) => setHue(parseInt(e.target.value || "0", 10))}
+          />
+        </div>
+        <div className="flex w-auto flex-0 gap-2">
+          <Button size="sm" variant="outline" className="pill" onClick={() => setHue(0)}>
+            Reset
+          </Button>
+          <Button
+            size="sm"
+            onClick={apply}
+            disabled={running || !rec?.dataUrl}
+            className="glass pill px-4 text-foreground"
+          >
+            {running ? "Shifting..." : "Apply"}
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          onClick={apply}
-          disabled={running || !rec?.dataUrl}
-          className="glass pill px-4 text-foreground"
-        >
-          {running ? "Shifting..." : "Apply"}
-        </Button>
-        <Button size="sm" variant="outline" className="pill" onClick={() => setHue(0)}>
-          Reset
-        </Button>
-        {error && <span className="text-xs text-destructive">{error}</span>}
-      </div>
+      {error && <div className="text-xs text-destructive">{error}</div>}
       {rec?.dataUrl && (
         <ImageModal src={rec.dataUrl} open={openIn} onOpenChange={setOpenIn} title="IN" />
       )}

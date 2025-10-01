@@ -171,7 +171,7 @@ export const VisualSphere: React.FC<Props> = ({
   }, [rec?.dataUrl, rec?.palette, k, maxIter, sampleSize, maxDisplay, loadImage]);
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center self-center">
       <Sphere colors={colors} pointSize={pointSize} pointOpacity={pointOpacity} />
     </div>
   );

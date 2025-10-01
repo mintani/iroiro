@@ -1,6 +1,5 @@
 "use client";
 
-import { useImageBus } from "@/components/providers/image-bus";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,7 +37,6 @@ const UnitCard: React.FC<UnitCardProps> = ({
   back,
   children,
   onRemove,
-  size = "md",
   menu,
   className,
   bgClass,
@@ -46,10 +44,11 @@ const UnitCard: React.FC<UnitCardProps> = ({
   const [flipped, setFlipped] = React.useState(false);
   const frontContent = front ?? children ?? null;
   const backContent = back ?? null;
-  const heightClass = size === "lg" ? "h-96" : size === "sm" ? "h-56" : "h-72";
 
   return (
-    <div className={`rounded-2xl border shadow-sm ${bgClass ?? "bg-muted/80"}`}>
+    <div
+      className={`flex h-full flex-col rounded-2xl border shadow-sm ${bgClass ?? "bg-muted/80"}`}
+    >
       <div className="flex h-8 items-center justify-between border-b bg-none px-3 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <span className="size-1.5 rounded-full bg-foreground/60" />
@@ -87,8 +86,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
           </button>
         </div>
       </div>
-
-      <div className={`relative ${heightClass} [perspective:1000px]`}>
+      <div className="relative flex-1 [perspective:1000px]">
         <div
           className={
             "absolute inset-0 transition-transform duration-500 [transform-style:preserve-3d]" +
@@ -99,7 +97,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
             {frontContent}
           </div>
           <div
-            className={`-2xl absolute inset-0 rotate-y-180 rounded-b px-4 py-4 [backface-visibility:hidden]`}
+            className={`absolute inset-0 rotate-y-180 rounded-b-2xl px-3 py-2 [backface-visibility:hidden]`}
           >
             {backContent}
           </div>
@@ -130,18 +128,19 @@ type ModuleProps = {
 
 export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allowedKinds }) => {
   const [kind, setKind] = React.useState<ModuleProps["variant"]>(variant);
-  const bus = useImageBus();
+  // const bus = useImageBus();
   // Sampler IO ids are configured on the card back
   const [samplerInId, setSamplerInId] = React.useState<string>("source");
   const [samplerOutId, setSamplerOutId] = React.useState<string>("quant");
   const [uploaderOutId, setUploaderOutId] = React.useState<string>("source");
-  // Effect plugins config
+  // Plugins initial values
   const [effectInId, setEffectInId] = React.useState<string>("source");
   const [effectOutId, setEffectOutId] = React.useState<string>("effect");
-  const [visualSourceId, setVisualSourceId] = React.useState<string>("source");
-  const [sphereK, setSphereK] = React.useState<number>(512);
+  const [visualSourceId, setVisualSourceId] = React.useState<string>("quant");
+  const [contrastSourceId, setContrastSourceId] = React.useState<string>("pool");
+  const [sphereK] = React.useState<number>(512);
   const [sphereIter] = React.useState<number>(25);
-  const [sphereSample, setSphereSample] = React.useState<number>(512);
+  const [sphereSample] = React.useState<number>(512);
   const [sphereMaxDisplay, setSphereMaxDisplay] = React.useState<number>(512);
   const [spherePointSize, setSpherePointSize] = React.useState<number>(0.12);
   const [sphereOpacity, setSphereOpacity] = React.useState<number>(0.95);
@@ -163,7 +162,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
     "pool",
     "theme",
   ];
-  const emptyHeightClass = size === "lg" ? "h-105" : size === "sm" ? "h-64" : "h-80";
+  // height is controlled by parent grid rows via h-full
   const sizeFilter = (k: ModuleKind) => {
     if (size === "lg") {
       return true;
@@ -238,56 +237,6 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
         ))}
     </>
   );
-  const ContrastPalettePicker: React.FC<{
-    sourceId: string;
-    fg?: [number, number, number];
-    bg?: [number, number, number];
-    onPickFg: (c: [number, number, number]) => void;
-    onPickBg: (c: [number, number, number]) => void;
-  }> = ({ sourceId, fg, bg, onPickFg, onPickBg }) => {
-    const rec = bus.get(sourceId);
-    const palette = rec?.palette ?? [];
-    const [target, setTarget] = React.useState<"fg" | "bg">("fg");
-    const isSame = (a?: [number, number, number], b?: [number, number, number]) =>
-      !!a && !!b && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-    return (
-      <div className="flex size-full flex-col gap-2">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>Target</span>
-          <div className="inline-flex overflow-hidden rounded-md border bg-background">
-            <button
-              type="button"
-              className={`px-2 py-1 text-xs ${target === "fg" ? "bg-accent" : ""}`}
-              onClick={() => setTarget("fg")}
-            >
-              FG
-            </button>
-            <button
-              type="button"
-              className={`px-2 py-1 text-xs ${target === "bg" ? "bg-accent" : ""}`}
-              onClick={() => setTarget("bg")}
-            >
-              BG
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {palette.map((c, i) => (
-            <button
-              key={i}
-              type="button"
-              className={`size-6 rounded border ${
-                isSame(fg, c) || isSame(bg, c) ? "ring-2 ring-foreground" : ""
-              }`}
-              style={{ background: `rgb(${c[0]},${c[1]},${c[2]})` }}
-              onClick={() => (target === "fg" ? onPickFg(c) : onPickBg(c))}
-              title={`rgb(${c.join(",")})`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="flex size-full flex-col">
@@ -304,7 +253,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
             </div>
           }
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
+            <div className="flex h-full gap-3">
               <div className="flex flex-col justify-center gap-3 overflow-hidden rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">OUT</div>
                 <label className="flex items-center gap-2">
@@ -341,7 +290,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           menu={pluginMenu}
           front={<Sampler inId={samplerInId} outId={samplerOutId} />}
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
+            <div className="flex h-full gap-3">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">IN / OUT</div>
                 <label className="flex items-center gap-2">
@@ -507,53 +456,23 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
             </div>
           }
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
+            <div className="grid h-full grid-cols-2 gap-1">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">SOURCE</div>
-                <label className="flex items-center gap-2">
-                  <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
-                    SRC
-                  </span>
+                <label className="flex items-center">
+                  <span className="w-8 shrink-0 text-xs text-muted-foreground">SRC</span>
                   <input
                     type="text"
                     value={visualSourceId}
                     onChange={(e) => setVisualSourceId(e.target.value)}
-                    className="h-8 w-full rounded-md border bg-background px-2 text-xs"
+                    className="h-7 w-14 rounded-md border bg-background px-2 text-xs"
                     aria-label="Sphere SOURCE ID"
                   />
                 </label>
-                <div className="text-xs font-medium text-muted-foreground">DECOMPOSE</div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                    K
-                    <input
-                      type="number"
-                      min={1}
-                      max={64}
-                      value={sphereK}
-                      onChange={(e) => setSphereK(parseInt(e.target.value || "1", 10))}
-                      className="h-7 w-16 rounded-md border bg-background px-2 text-xs"
-                      aria-label="Sphere K"
-                    />
-                  </label>
-                  <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                    Sample
-                    <input
-                      type="number"
-                      min={64}
-                      max={1024}
-                      step={32}
-                      value={sphereSample}
-                      onChange={(e) => setSphereSample(parseInt(e.target.value || "256", 10))}
-                      className="h-7 w-20 rounded-md border bg-background px-2 text-xs"
-                      aria-label="Sphere Sample"
-                    />
-                  </label>
-                </div>
               </div>
-              <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/40 p-3 pl-4">
+              <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/40 p-2">
                 <div className="text-xs font-medium text-muted-foreground">DISPLAY</div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center">
                   <label className="flex items-center gap-1 text-xs text-muted-foreground">
                     Colors
                     <input
@@ -562,7 +481,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
                       max={512}
                       value={sphereMaxDisplay}
                       onChange={(e) => setSphereMaxDisplay(parseInt(e.target.value || "1", 10))}
-                      className="h-7 w-16 rounded-md border bg-background px-2 text-xs"
+                      className="h-7 w-14 rounded-md border bg-background px-2 text-xs"
                       aria-label="Sphere Max Display"
                     />
                   </label>
@@ -575,7 +494,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
                       step={0.05}
                       value={sphereOpacity}
                       onChange={(e) => setSphereOpacity(parseFloat(e.target.value || "1"))}
-                      className="h-7 w-16 rounded-md border bg-background px-2 text-xs"
+                      className="h-7 w-12 rounded-md border bg-background px-2 text-xs"
                       aria-label="Sphere Point Opacity"
                     />
                   </label>
@@ -588,7 +507,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
                       step={0.01}
                       value={spherePointSize}
                       onChange={(e) => setSpherePointSize(parseFloat(e.target.value || "0.1"))}
-                      className="h-7 w-16 rounded-md border bg-background px-2 text-xs"
+                      className="h-7 w-12 rounded-md border bg-background px-2 text-xs"
                       aria-label="Sphere Point Size"
                     />
                   </label>
@@ -601,15 +520,15 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
 
       {kind === "contrast" && (
         <UnitCard
-          title="Contrast Checker"
+          title="Contrast"
           bgClass={bgByKind.contrast}
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
           front={
-            <div className="flex h-full items-center justify-center p-2">
+            <div className="flex h-full items-center justify-center">
               <VisualContrastChecker
-                sourceId={visualSourceId}
+                sourceId={contrastSourceId}
                 fg={contrastFg}
                 bg={contrastBg}
                 onFgChange={setContrastFg}
@@ -618,30 +537,23 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
             </div>
           }
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
-              <div className="flex flex-col justify-center gap-3 overflow-hidden rounded-md border bg-background/60 p-3 backdrop-blur">
-                <div className="text-xs font-medium text-muted-foreground">CHANNEL / PICK</div>
-                <label className="flex items-center gap-2">
-                  <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
-                    SRC
-                  </span>
+            <div className="grid h-full grid-cols-2 gap-1">
+              <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
+                <div className="text-xs font-medium text-muted-foreground">SOURCE</div>
+                <label className="flex items-center">
+                  <span className="w-8 shrink-0 text-xs text-muted-foreground">SRC</span>
                   <input
                     type="text"
-                    value={visualSourceId}
-                    onChange={(e) => setVisualSourceId(e.target.value)}
-                    className="h-8 w-full rounded-md border bg-background px-2 text-xs"
+                    value={contrastSourceId}
+                    onChange={(e) => setContrastSourceId(e.target.value)}
+                    className="h-7 w-full rounded-md border bg-background px-2 text-xs"
                     aria-label="Contrast SOURCE ID"
                   />
                 </label>
-                <ContrastPalettePicker
-                  sourceId={visualSourceId}
-                  onPickFg={setContrastFg}
-                  onPickBg={setContrastBg}
-                />
               </div>
-              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
+              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-2 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>パレットから前景/背景色を選択し、コントラストを確認します。</div>
+                <div>指定チャンネル（デフォルト: pool）から色を自動取得します。</div>
               </div>
             </div>
           }
@@ -661,23 +573,21 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
             </div>
           }
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
+            <div className="grid h-full grid-cols-2 gap-1">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">SOURCE</div>
-                <label className="flex items-center gap-2">
-                  <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
-                    SRC
-                  </span>
+                <label className="flex items-center">
+                  <span className="w-8 shrink-0 text-xs text-muted-foreground">SRC</span>
                   <input
                     type="text"
                     value={visualSourceId}
                     onChange={(e) => setVisualSourceId(e.target.value)}
-                    className="h-8 w-full rounded-md border bg-background px-2 text-xs"
+                    className="h-7 w-14 rounded-md border bg-background px-2 text-xs"
                     aria-label="Pie SOURCE ID"
                   />
                 </label>
               </div>
-              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
+              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-2 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
                 <div>抽出されたパレットを等角度で円グラフ表示します。</div>
               </div>
@@ -749,7 +659,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
             </div>
           }
           back={
-            <div className="grid h-full grid-cols-2 gap-3 p-3">
+            <div className="flex h-full gap-3">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">SOURCE</div>
                 <label className="flex items-center gap-2">
@@ -765,23 +675,17 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
                   />
                 </label>
               </div>
-              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
-                <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>選択したパレットからテーマトークンを生成・エクスポートします。</div>
-              </div>
             </div>
           }
         />
       )}
 
       {kind === "empty" && (
-        <div
-          className={`flex ${emptyHeightClass} items-center justify-center rounded-2xl border bg-muted/80 text-center`}
-        >
+        <div className="flex h-full items-center justify-center rounded-2xl border bg-muted/80 text-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="mt-5 rounded-full px-8 py-6 text-base">
-                <Plus className="mr-2 size-5" /> Add module
+              <Button variant="outline" className="mt-5 rounded-full py-6 text-base">
+                <Plus className="size-5" /> Add module
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="min-w-48">

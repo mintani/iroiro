@@ -23,19 +23,19 @@ export const VisualContrastChecker: React.FC<{
   bg?: [number, number, number];
   onFgChange?: (c: [number, number, number]) => void;
   onBgChange?: (c: [number, number, number]) => void;
-}> = ({ sourceId = "quant", fg: fgProp, bg: bgProp, onFgChange, onBgChange }) => {
+}> = ({ sourceId = "pool", fg: fgProp, bg: bgProp, onFgChange, onBgChange }) => {
   const bus = useImageBus();
   const [fgState, setFgState] = React.useState<[number, number, number]>([0, 0, 0]);
   const [bgState, setBgState] = React.useState<[number, number, number]>([255, 255, 255]);
 
-  const recMain = bus.get(sourceId) ?? bus.get(`${sourceId}:default`);
+  const recMain = bus.get(sourceId);
   React.useEffect(() => {
     const pal = recMain?.palette;
     if (pal && pal.length >= 2) {
-      setFgState((prev) => (fgProp ? prev : pal[0]));
-      setBgState((prev) => (bgProp ? prev : pal[1]));
+      if (!fgProp) setFgState(pal[0]);
+      if (!bgProp) setBgState(pal[1]);
     }
-  }, [recMain, fgProp, bgProp]);
+  }, [recMain?.palette, fgProp, bgProp]);
 
   const fg = fgProp ?? fgState;
   const bg = bgProp ?? bgState;
@@ -94,7 +94,7 @@ export const VisualContrastChecker: React.FC<{
       </div>
       {/* render sample text block */}
       <div
-        className="rounded-md border p-4"
+        className="rounded-sm border p-2"
         style={{ color: `rgb(${fg.join(",")})`, background: `rgb(${bg.join(",")})` }}
       >
         The quick brown fox jumps over the lazy dog.
