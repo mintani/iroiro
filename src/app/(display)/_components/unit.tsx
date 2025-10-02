@@ -29,6 +29,7 @@ type UnitCardProps = {
   menu?: React.ReactNode;
   className?: string;
   bgClass?: string;
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 };
 
 const UnitCard: React.FC<UnitCardProps> = ({
@@ -40,6 +41,7 @@ const UnitCard: React.FC<UnitCardProps> = ({
   menu,
   className,
   bgClass,
+  dragHandleProps,
 }) => {
   const [flipped, setFlipped] = React.useState(false);
   const frontContent = front ?? children ?? null;
@@ -50,7 +52,10 @@ const UnitCard: React.FC<UnitCardProps> = ({
       className={`flex h-full flex-col rounded-2xl border shadow-sm ${bgClass ?? "bg-muted/80"}`}
     >
       <div className="flex h-8 items-center justify-between border-b bg-none px-3 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
+        <div
+          className="flex flex-1 cursor-grab items-center gap-2 active:cursor-grabbing"
+          {...dragHandleProps}
+        >
           <span className="size-1.5 rounded-full bg-foreground/60" />
           <span>{title}</span>
         </div>
@@ -124,12 +129,17 @@ type ModuleProps = {
   onPick?: (kind: ModuleKind) => void;
   size?: "sm" | "md" | "lg";
   allowedKinds?: ModuleKind[];
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 };
 
-export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allowedKinds }) => {
+export const Unit: React.FC<ModuleProps> = ({
+  variant,
+  onPick,
+  size = "md",
+  allowedKinds,
+  dragHandleProps,
+}) => {
   const [kind, setKind] = React.useState<ModuleProps["variant"]>(variant);
-  // const bus = useImageBus();
-  // Sampler IO ids are configured on the card back
   const [samplerInId, setSamplerInId] = React.useState<string>("source");
   const [samplerOutId, setSamplerOutId] = React.useState<string>("quant");
   const [uploaderOutId, setUploaderOutId] = React.useState<string>("source");
@@ -247,14 +257,15 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center">
               <Uploader id={uploaderOutId} />
             </div>
           }
           back={
-            <div className="flex h-full gap-3">
-              <div className="flex flex-col justify-center gap-3 overflow-hidden rounded-md border bg-background/60 p-3 backdrop-blur">
+            <div className="grid h-full grid-cols-2 gap-3 p-3">
+              <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">OUT</div>
                 <label className="flex items-center gap-2">
                   <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
@@ -272,9 +283,9 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>クリック/ドラッグ&ドロップ/貼り付けで画像を投入します。</div>
-                <div>選択直後に OUT の ID へ保存されます。</div>
-                <div>アップロードボタンでバックエンドに送信します。</div>
+                <div>Upload images by clicking, drag-and-drop, or pasting.</div>
+                <div>Images are saved to OUT ID immediately upon selection.</div>
+                <div>Click the upload button to send to the backend.</div>
               </div>
             </div>
           }
@@ -288,9 +299,10 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={<Sampler inId={samplerInId} outId={samplerOutId} />}
           back={
-            <div className="flex h-full gap-3">
+            <div className="grid h-full grid-cols-2 gap-3 p-3">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">IN / OUT</div>
                 <label className="flex items-center gap-2">
@@ -320,9 +332,9 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>IN の画像から色を抽出し、量子化結果を OUT に保存します。</div>
-                <div>左上のパラメータで K/反復数/サンプルサイズを調整できます。</div>
-                <div>キャンバスをクリックで全画面プレビューが開きます。</div>
+                <div>Extracts colors from IN image and saves quantized result to OUT.</div>
+                <div>Adjust K/iterations/sample size with the top-left parameters.</div>
+                <div>Click the canvas to open a fullscreen preview.</div>
               </div>
             </div>
           }
@@ -339,6 +351,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           }}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center p-2">
               <EffectColorAdjustment inId={effectInId} outId={effectOutId} />
@@ -375,7 +388,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>入力画像に対して明度/コントラスト/彩度を適用します。</div>
+                <div>Apply brightness/contrast/saturation to the input image.</div>
               </div>
             </div>
           }
@@ -392,6 +405,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           }}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center p-2">
               <EffectColorShifter inId={effectInId} outId={effectOutId} />
@@ -428,7 +442,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>入力画像に対して色相シフトを適用します。</div>
+                <div>Apply hue shift to the input image.</div>
               </div>
             </div>
           }
@@ -442,6 +456,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center">
               <VisualSphere
@@ -525,6 +540,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center">
               <VisualContrastChecker
@@ -553,7 +569,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-2 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>指定チャンネル（デフォルト: pool）から色を自動取得します。</div>
+                <div>Automatically picks colors from the specified channel (default: pool).</div>
               </div>
             </div>
           }
@@ -567,6 +583,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center p-2">
               <VisualPieChart sourceId={visualSourceId} />
@@ -589,7 +606,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-2 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>抽出されたパレットを等角度で円グラフ表示します。</div>
+                <div>Displays extracted palette as a pie chart with equal angles.</div>
               </div>
             </div>
           }
@@ -603,6 +620,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center p-2">
               <VisualPool sourceId={visualSourceId} outId={visualPoolOutId} />
@@ -639,7 +657,7 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
               </div>
               <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
                 <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
-                <div>色のドラッグ&ドロップで配列を編集し、新しい出力へ保存します。</div>
+                <div>Drag and drop colors to edit the array and save to new output.</div>
               </div>
             </div>
           }
@@ -653,13 +671,14 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
           onRemove={handleRemove}
           size={size}
           menu={pluginMenu}
+          dragHandleProps={dragHandleProps}
           front={
             <div className="flex h-full items-center justify-center p-2">
-              <VisualThemeExporter sourceId={visualSourceId} />
+              <VisualThemeExporter sourceId={visualPoolOutId} />
             </div>
           }
           back={
-            <div className="flex h-full gap-3">
+            <div className="grid h-full grid-cols-2 gap-3 p-3">
               <div className="flex flex-col justify-center gap-3 rounded-md border bg-background/60 p-3 backdrop-blur">
                 <div className="text-xs font-medium text-muted-foreground">SOURCE</div>
                 <label className="flex items-center gap-2">
@@ -668,12 +687,16 @@ export const Unit: React.FC<ModuleProps> = ({ variant, onPick, size = "md", allo
                   </span>
                   <input
                     type="text"
-                    value={visualSourceId}
-                    onChange={(e) => setVisualSourceId(e.target.value)}
+                    value={visualPoolOutId}
+                    onChange={(e) => setVisualPoolOutId(e.target.value)}
                     className="h-8 w-full rounded-md border bg-background px-2 text-xs"
                     aria-label="Theme SOURCE ID"
                   />
                 </label>
+              </div>
+              <div className="flex flex-col justify-center gap-2 rounded-md border bg-background/40 p-3 pl-4 text-xs text-muted-foreground">
+                <div className="text-xs font-medium text-muted-foreground">GUIDE</div>
+                <div>Exports the color palette as theme files in various formats.</div>
               </div>
             </div>
           }

@@ -28,7 +28,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Palette as PaletteIcon, Plus, Trash2 } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Download, GripVertical, Palette as PaletteIcon, Plus, Trash2 } from "lucide-react";
 import React from "react";
 
 const clamp255 = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
@@ -96,6 +113,165 @@ const hslToRgb = ([h, s, l]: [number, number, number]): [number, number, number]
 };
 
 type Lch = [number, number, number];
+type Mode = "hex" | "hsl" | "lch";
+type Category = "primary" | "secondary" | "accent" | "sub";
+
+type SortableColorItemProps = {
+  id: string;
+  color: [number, number, number];
+  index: number;
+  category: Category;
+  mode: Mode;
+  onColorChange: (next: [number, number, number]) => void;
+  onRemove: () => void;
+};
+
+const SortableColorItem: React.FC<SortableColorItemProps> = ({
+  id,
+  color: c,
+  index: i,
+  mode,
+  onColorChange,
+  onRemove,
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const hex = hexFromRgb(c);
+  const hsl = rgbToHsl(c);
+  const lch = rgbToLch(c);
+  const copyValue =
+    mode === "hex"
+      ? hex
+      : mode === "hsl"
+        ? `hsl(${Math.round(hsl[0])}, ${Math.round(hsl[1])}%, ${Math.round(hsl[2])}%)`
+        : `lch(${Math.round(lch[0])}% ${Math.round(lch[1])} ${Math.round(lch[2])})`;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 rounded-md border bg-background/80 p-3"
+    >
+      <button
+        type="button"
+        className="cursor-grab touch-none active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4 text-muted-foreground" />
+      </button>
+      <div
+        className="size-10 shrink-0 rounded border"
+        style={{ background: `rgb(${c[0]} ${c[1]} ${c[2]})` }}
+      />
+      <Badge variant="secondary" className="shrink-0">
+        {i === 0 ? "DEFAULT" : `#${i + 1}`}
+      </Badge>
+      {mode === "hex" && (
+        <div className="flex flex-1 items-center gap-2">
+          <input
+            type="color"
+            value={hex}
+            onChange={(e) => onColorChange(rgbFromHex(e.target.value))}
+            className="size-8 cursor-pointer"
+          />
+          <Input
+            type="text"
+            className="w-28 font-mono text-xs"
+            value={hex}
+            onChange={(e) => onColorChange(rgbFromHex(e.target.value))}
+          />
+        </div>
+      )}
+      {mode === "hsl" && (
+        <div className="flex flex-1 flex-wrap items-center gap-2 text-xs">
+          <label className="flex items-center gap-1">
+            H
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(hsl[0])}
+              onChange={(e) =>
+                onColorChange(hslToRgb([parseFloat(e.target.value || "0"), hsl[1], hsl[2]]))
+              }
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            S
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(hsl[1])}
+              onChange={(e) =>
+                onColorChange(hslToRgb([hsl[0], parseFloat(e.target.value || "0"), hsl[2]]))
+              }
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            L
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(hsl[2])}
+              onChange={(e) =>
+                onColorChange(hslToRgb([hsl[0], hsl[1], parseFloat(e.target.value || "0")]))
+              }
+            />
+          </label>
+        </div>
+      )}
+      {mode === "lch" && (
+        <div className="flex flex-1 flex-wrap items-center gap-2 text-xs">
+          <label className="flex items-center gap-1">
+            L
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(lch[0])}
+              onChange={(e) =>
+                onColorChange(lchToRgb([parseFloat(e.target.value || "0"), lch[1], lch[2]]))
+              }
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            C
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(lch[1])}
+              onChange={(e) =>
+                onColorChange(lchToRgb([lch[0], parseFloat(e.target.value || "0"), lch[2]]))
+              }
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            H
+            <Input
+              type="number"
+              className="w-16"
+              value={Math.round(lch[2])}
+              onChange={(e) =>
+                onColorChange(lchToRgb([lch[0], lch[1], parseFloat(e.target.value || "0")]))
+              }
+            />
+          </label>
+        </div>
+      )}
+      <CopyButton text={copyValue} className="shrink-0" />
+      <Button size="icon" variant="ghost" className="shrink-0" onClick={onRemove}>
+        <Trash2 className="size-4" />
+      </Button>
+    </div>
+  );
+};
 
 const pivotRgb = (v: number) => {
   v /= 255;
@@ -162,9 +338,6 @@ const xyzToRgb = ([x, y, z]: [number, number, number]) => {
 const rgbToLch = (rgb: [number, number, number]): Lch => labToLch(xyzToLab(rgbToXyz(rgb)));
 const lchToRgb = (lch: Lch): [number, number, number] => xyzToRgb(labToXyz(lchToLab(lch)));
 
-type Mode = "hex" | "hsl" | "lch";
-type Category = "primary" | "secondary" | "accent" | "sub";
-
 export const VisualThemeExporter: React.FC<{ sourceId?: string }> = ({ sourceId = "pool" }) => {
   const bus = useImageBus();
   const rec = bus.get(sourceId);
@@ -179,6 +352,32 @@ export const VisualThemeExporter: React.FC<{ sourceId?: string }> = ({ sourceId 
   });
   const [activeCat, setActiveCat] = React.useState<Category>("primary");
   const [mode, setMode] = React.useState<Mode>("hex");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent, category: Category) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setAssignments((prev) => {
+        const items = prev[category] ?? [];
+        const oldIndex = items.findIndex((_, i) => `${category}-${i}` === active.id);
+        const newIndex = items.findIndex((_, i) => `${category}-${i}` === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) return prev;
+
+        return {
+          ...prev,
+          [category]: arrayMove(items, oldIndex, newIndex),
+        };
+      });
+    }
+  };
 
   React.useEffect(() => {
     if (open) {
@@ -377,193 +576,47 @@ export const VisualThemeExporter: React.FC<{ sourceId?: string }> = ({ sourceId 
                 </TabsList>
                 {(["primary", "secondary", "accent", "sub"] as Category[]).map((cat) => (
                   <TabsContent key={cat} value={cat} className="mt-3">
-                    <div className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto rounded-md border bg-muted/20 p-3">
-                      {(assignments[cat] ?? []).length === 0 && (
-                        <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-sm text-muted-foreground">
-                          <PaletteIcon className="size-8 opacity-50" />
-                          <div>No {cat} colors</div>
-                          <div className="text-xs">Add custom colors below</div>
-                        </div>
-                      )}
-                      {(assignments[cat] ?? []).map((c, i) => {
-                        const hex = hexFromRgb(c);
-                        const hsl = rgbToHsl(c);
-                        const lch = rgbToLch(c);
-                        return (
-                          <div
-                            key={i}
-                            className="flex items-center gap-3 rounded-md border bg-background/80 p-3"
-                          >
-                            <div
-                              className="size-10 shrink-0 rounded border"
-                              style={{ background: `rgb(${c[0]} ${c[1]} ${c[2]})` }}
-                            />
-                            <Badge variant="secondary" className="shrink-0">
-                              {i === 0 ? "DEFAULT" : `#${i + 1}`}
-                            </Badge>
-                            {mode === "hex" && (
-                              <div className="flex flex-1 items-center gap-2">
-                                <input
-                                  type="color"
-                                  value={hex}
-                                  onChange={(e) =>
-                                    handleColorChange(cat, i, rgbFromHex(e.target.value))
-                                  }
-                                  className="size-8 cursor-pointer"
-                                />
-                                <Input
-                                  type="text"
-                                  className="w-28 font-mono text-xs"
-                                  value={hex}
-                                  onChange={(e) =>
-                                    handleColorChange(cat, i, rgbFromHex(e.target.value))
-                                  }
-                                />
-                              </div>
-                            )}
-                            {mode === "hsl" && (
-                              <div className="flex flex-1 flex-wrap items-center gap-2 text-xs">
-                                <label className="flex items-center gap-1">
-                                  H
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(hsl[0])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        hslToRgb([
-                                          parseFloat(e.target.value || "0"),
-                                          hsl[1],
-                                          hsl[2],
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label className="flex items-center gap-1">
-                                  S
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(hsl[1])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        hslToRgb([
-                                          hsl[0],
-                                          parseFloat(e.target.value || "0"),
-                                          hsl[2],
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label className="flex items-center gap-1">
-                                  L
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(hsl[2])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        hslToRgb([
-                                          hsl[0],
-                                          hsl[1],
-                                          parseFloat(e.target.value || "0"),
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                              </div>
-                            )}
-                            {mode === "lch" && (
-                              <div className="flex flex-1 flex-wrap items-center gap-2 text-xs">
-                                <label className="flex items-center gap-1">
-                                  L
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(lch[0])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        lchToRgb([
-                                          parseFloat(e.target.value || "0"),
-                                          lch[1],
-                                          lch[2],
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label className="flex items-center gap-1">
-                                  C
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(lch[1])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        lchToRgb([
-                                          lch[0],
-                                          parseFloat(e.target.value || "0"),
-                                          lch[2],
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label className="flex items-center gap-1">
-                                  H
-                                  <Input
-                                    type="number"
-                                    className="w-16"
-                                    value={Math.round(lch[2])}
-                                    onChange={(e) =>
-                                      handleColorChange(
-                                        cat,
-                                        i,
-                                        lchToRgb([
-                                          lch[0],
-                                          lch[1],
-                                          parseFloat(e.target.value || "0"),
-                                        ])
-                                      )
-                                    }
-                                  />
-                                </label>
-                              </div>
-                            )}
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="shrink-0"
-                              onClick={() => handleRemoveColor(cat, i)}
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(event) => handleDragEnd(event, cat)}
+                    >
+                      <div className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto rounded-md border bg-muted/20 p-3">
+                        {(assignments[cat] ?? []).length === 0 && (
+                          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-sm text-muted-foreground">
+                            <PaletteIcon className="size-8 opacity-50" />
+                            <div>No {cat} colors</div>
+                            <div className="text-xs">Add custom colors below</div>
                           </div>
-                        );
-                      })}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAddColor(cat)}
-                        className="mt-2"
-                      >
-                        <Plus className="size-4" />
-                        Add {cat} Color
-                      </Button>
-                    </div>
+                        )}
+                        <SortableContext
+                          items={(assignments[cat] ?? []).map((_, i) => `${cat}-${i}`)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {(assignments[cat] ?? []).map((c, i) => (
+                            <SortableColorItem
+                              key={`${cat}-${i}`}
+                              id={`${cat}-${i}`}
+                              color={c}
+                              index={i}
+                              category={cat}
+                              mode={mode}
+                              onColorChange={(next) => handleColorChange(cat, i, next)}
+                              onRemove={() => handleRemoveColor(cat, i)}
+                            />
+                          ))}
+                        </SortableContext>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddColor(cat)}
+                          className="mt-2"
+                        >
+                          <Plus className="size-4" />
+                          Add {cat} Color
+                        </Button>
+                      </div>
+                    </DndContext>
                   </TabsContent>
                 ))}
               </Tabs>
@@ -724,25 +777,32 @@ export const VisualThemeExporter: React.FC<{ sourceId?: string }> = ({ sourceId 
                   <CardDescription>Quick reference</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex justify-between px-20">
                     {(["primary", "secondary", "accent", "sub"] as Category[]).map((cat) => (
                       <div key={cat} className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground capitalize">
                           {cat}
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          {(assignments[cat] ?? []).map((c, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1">
-                              <div
-                                className="size-10 rounded-md border shadow-sm"
-                                style={{ backgroundColor: `rgb(${c[0]}, ${c[1]}, ${c[2]})` }}
-                                title={`rgb(${c[0]}, ${c[1]}, ${c[2]})`}
-                              />
-                              <div className="text-[10px] text-muted-foreground">
-                                {hexFromRgb(c)}
+                          {(assignments[cat] ?? []).map((c, i) => {
+                            const hex = hexFromRgb(c);
+                            return (
+                              <div key={i} className="group relative flex flex-col gap-1">
+                                <div
+                                  className="size-10 rounded-md border shadow-sm"
+                                  style={{ backgroundColor: `rgb(${c[0]}, ${c[1]}, ${c[2]})` }}
+                                  title={`rgb(${c[0]}, ${c[1]}, ${c[2]})`}
+                                />
+                                <div className="flex gap-1">
+                                  <div className="text-[10px] text-muted-foreground">{hex}</div>
+                                  <CopyButton
+                                    text={hex}
+                                    className="absolute opacity-0 transition-opacity group-hover:opacity-100"
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                           {(assignments[cat] ?? []).length === 0 && (
                             <div className="text-xs text-muted-foreground">No colors</div>
                           )}

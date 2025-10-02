@@ -1,192 +1,151 @@
-# Fullstack Template
+# iroiro
 
-[![CI](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml/badge.svg)](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-9.x-f69220?logo=pnpm&logoColor=white)](https://pnpm.io)
-[![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)](https://react.dev)
-[![Hono](https://img.shields.io/badge/Hono-4.x-ff6a00)](https://hono.dev)
-[![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![Better Auth](https://img.shields.io/badge/Better%20Auth-1.x-111111)](https://www.better-auth.com/)
-[![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-ready-000000)](https://ui.shadcn.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-A modern, production-ready fullstack template built with Next.js, Hono, Better Auth, Prisma, and shadcn/ui. Type-safe, performance-oriented, and designed for fast onboarding.
-
----
-
-## Why this template
-
-- Focused stack: Next.js App Router + Hono RPC for typed server communication
-- Production-ready auth: Better Auth with RBAC-ready scaffolding
-- Database first: PostgreSQL via Prisma, Docker Compose provided
-- Polished UI/UX: shadcn/ui + Tailwind with dark mode and accessible patterns
-- Developer experience: pnpm, ESLint, Prettier, Husky, and strict TypeScript
+A color extraction and palette editing tool. Extract colors from images, visualize them in 3D space, edit palettes, and export as theme files.
 
 ## Features
 
-- Authentication with Better Auth (GitHub OAuth ready)
-- Type-safe API routes with Hono (RPC and REST)
-- PostgreSQL with Prisma ORM
-- UI components with shadcn/ui and Radix UI
-- Beautiful progress bar with bprogress/next
-- Dark/light theme via next-themes
-- Optional S3 file upload (AWS S3 or MinIO)
-- Full TypeScript and strict checks
+- Image upload and color extraction with K-means clustering
+- Color visualization (3D sphere, pie chart, color pool)
+- Image effects (brightness/contrast/saturation, hue shift)
+- Contrast checker for accessibility
+- Theme export in multiple formats
+- Drag and drop interface for editing color arrays
 
 ## Tech Stack
 
-- Frontend: Next.js 15, React 19, Tailwind CSS 4, shadcn/ui, Lucide Icons, React Icons
-- Backend: Hono (RPC ready), Better Auth, Zod validation
-- Data: PostgreSQL, Prisma 6
-- Tooling: TypeScript 5, pnpm, ESLint 9, Prettier 3, Husky, lint-staged
+- Next.js 15 with App Router
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- shadcn/ui
+- Three.js / React Three Fiber
+- Better Auth for authentication
+- PostgreSQL with Prisma
+- Hono for API routes
 
-## Screenshot
+## Prerequisites
 
-![Application Screenshot](docs/screenshot.png)
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 18+
+- Node.js 18 or later
 - pnpm
-- Docker & Docker Compose (for database)
+- Docker and Docker Compose
 
-### Setup
+## Setup
 
-1. Clone and install
+1. Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/caru-ini/fullstack-template
-cd fullstack-template
+git clone <repository-url>
+cd iroiro
 pnpm install
 ```
 
-1. Environment variables
+2. Copy the environment file and configure it:
 
 ```bash
 cp .env.example .env
-# Generate a secret for Better Auth
-pnpx @better-auth/cli secret
 ```
 
-Fill in `.env` according to your environment. The keys are validated by `src/env.ts` (T3 Env).
+Edit `.env` and fill in the required values:
 
-1. Start services
+- `DATABASE_URL`: PostgreSQL connection string (default: `postgresql://postgres:postgres@localhost:5432/app`)
+- `NEXT_PUBLIC_BETTER_AUTH_URL`: Application URL (default: `http://localhost:3000`)
+- `BETTER_AUTH_SECRET`: Generate with `pnpx @better-auth/cli secret`
+- `GITHUB_ID` and `GITHUB_SECRET`: GitHub OAuth credentials (optional)
+- S3 configuration: Optional for image storage
+
+3. Start the database:
 
 ```bash
 docker compose up -d
 ```
 
-1. Generate Prisma schema from Better Auth
+4. Generate Prisma client and push schema:
 
 ```bash
 pnpx @better-auth/cli generate
+pnpm db push
 ```
 
-1. Push database schema
-
-```bash
-pnpm db db push  # or: pnpm dlx prisma db push
-```
-
-1. Start the dev server
+5. Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-Visit http://localhost:3000
+Open http://localhost:3000 in your browser.
+
+## Usage
+
+### Basic Workflow
+
+1. **Upload Image**: Click or drag-and-drop an image into the Image Uploader module
+2. **Extract Colors**: Use the Sampler module to extract colors with K-means clustering
+3. **Visualize**: View colors in 3D sphere, pie chart, or color pool
+4. **Edit**: Drag and drop colors in the Color Pool to rearrange
+5. **Export**: Use Theme Exporter to download palette in various formats
+
+### Modules
+
+Each module can be flipped to see configuration options on the back side:
+
+- **Image Uploader**: Upload images via click, drag-and-drop, or paste
+- **Sampler**: Extract colors using K-means algorithm with adjustable parameters
+- **Effect: Adjustment**: Apply brightness, contrast, and saturation adjustments
+- **Effect: Shifter**: Apply hue rotation to images
+- **3D Sphere**: Visualize colors in 3D RGB color space
+- **Contrast Checker**: Check color contrast ratios for accessibility
+- **Pie Chart**: Display color distribution as a pie chart
+- **Color Pool**: Edit color array with drag-and-drop
+- **Theme Exporter**: Export palettes in multiple formats
+
+### Module Configuration
+
+Click the "Flip" button on each module to access its configuration panel. Configure input/output IDs to connect modules together.
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start development server (Turbo) |
-| `pnpm build` | Build for production |
-| `pnpm start` | Start production server |
-| `pnpm preview` | Build and start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm lint:fix` | Fix ESLint issues |
-| `pnpm typecheck` | TypeScript type checking |
-| `pnpm fmt:check` | Check code formatting |
-| `pnpm fmt:write` | Format code with Prettier |
-| `pnpm check` | Linting and type checking |
-| `pnpm db` | Prisma CLI |
-
-## Continuous Integration
-
-- Workflow: `.github/workflows/ci.yaml` ([view on GitHub](https://github.com/caru-ini/fullstack-template/actions/workflows/ci.yaml))
-- Triggers: `push` to `main`, `pull_request`
-- Steps:
-  - Install dependencies with pnpm
-  - Prettier format check (`pnpm fmt:check`)
-  - ESLint (`pnpm lint`)
-  - TypeScript typecheck (`pnpm typecheck`)
-  - Build (`pnpm build`)
-
-### Reproduce CI locally
-
-```bash
-pnpm install &&
-pnpm fmt:check &&
-pnpm lint &&
-pnpm typecheck &&
-pnpm build
-```
-
-Notes:
-
-- The CI sets dummy environment variables to satisfy build-time validation. When building locally, copy `.env.example` to `.env` and fill required keys.
+- `pnpm dev`: Start development server with Turbo
+- `pnpm build`: Build for production
+- `pnpm start`: Start production server
+- `pnpm lint`: Run ESLint
+- `pnpm lint:fix`: Fix linting issues
+- `pnpm typecheck`: Run TypeScript type checking
+- `pnpm fmt:check`: Check code formatting
+- `pnpm fmt:write`: Format code with Prettier
+- `pnpm db`: Access Prisma CLI
 
 ## Project Structure
 
-```plaintext
+```
 src/
-├── app/                    # Next.js App Router
-│   ├── (about)/            # Route groups
-│   ├── api/                # API routes
-│   │   ├── [[...route]]/   # Hono API routes
-│   │   └── auth/           # Better Auth endpoints
-│   └── globals.css         # Global styles
-├── components/             # Reusable components
+├── app/
+│   ├── (display)/          # Main application page
+│   │   └── _components/    # Color tool modules
+│   ├── api/                # API routes (Hono + Better Auth)
+│   ├── about/              # About page
+│   └── dashboard/          # Dashboard page
+├── components/
 │   ├── auth/               # Authentication components
 │   ├── layout/             # Layout components
-│   ├── misc/               # Miscellaneous components
-│   ├── providers/          # Context providers
+│   ├── misc/               # Utility components
+│   ├── providers/          # React context providers
 │   └── ui/                 # shadcn/ui components
-├── lib/                    # Utilities
-│   ├── auth.ts             # Better Auth configuration
-│   ├── auth-client.ts      # Client-side auth utilities
-│   ├── db.ts               # Database connection
-│   ├── hono.ts             # Hono client setup
-│   ├── s3-client.ts        # S3 client setup
-│   └── utils.ts            # Utility functions
-└── env.ts                  # Environment variable validation
+└── lib/
+    ├── auth.ts             # Better Auth configuration
+    ├── auth-client.ts      # Auth client utilities
+    ├── db.ts               # Prisma client
+    ├── hono.ts             # Hono RPC client
+    └── utils.ts            # Utility functions
 ```
 
-## Deployment
+## Development Notes
 
-### Vercel (recommended)
-
-1. Push your code to GitHub
-1. Connect the repository to Vercel
-1. Set environment variables in the Vercel dashboard
-1. Deploy on every push
-
-## Contributing
-
-1. Fork the repository
-1. Create your feature branch (`git checkout -b feature/amazing-feature`)
-1. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-1. Push to the branch (`git push origin feature/amazing-feature`)
-1. Open a Pull Request
+- The project uses pnpm for package management
+- ESLint and Prettier are configured for code quality
+- Husky and lint-staged ensure code quality on commits
+- Environment variables are validated with Zod in `src/env.ts`
+- Use absolute imports with `@/` alias
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
-
----
-
-If this project helps you, please consider giving it a star.
+MIT

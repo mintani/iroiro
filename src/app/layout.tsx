@@ -1,3 +1,4 @@
+import { DesktopOnlyGuard } from "@/components/misc/desktop-only-guard";
 import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fullstack Template",
-  description: "Fullstack Template",
+  title: "iR² - Color Theme Extractor",
+  description: "Professional color theme extraction and management tool",
 };
 
 export default function RootLayout({
@@ -26,7 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <DesktopOnlyGuard>{children}</DesktopOnlyGuard>
+        </Providers>
       </body>
     </html>
   );

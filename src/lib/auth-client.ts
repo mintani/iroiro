@@ -9,6 +9,8 @@ export const client = createAuthClient({
   plugins: [adminClient()],
 });
 
+export const authClient = client;
+
 export type Session = typeof client.$Infer.Session;
 
 const providersMap = {

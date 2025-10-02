@@ -122,7 +122,7 @@ export const VisualPool: React.FC<{ sourceId?: string; outId?: string; channel?:
           <div className="text-xs font-medium text-muted-foreground">ASSIGNMENTS</div>
           <div className="text-xs text-muted-foreground">Active: {labelByCat[activeCat]}</div>
         </div>
-        <div className="grid flex-1 grid-cols-2 gap-2 overflow-hidden rounded-md border bg-background/60 p-3 backdrop-blur">
+        <div className="grid flex-1 grid-cols-2 gap-2 overflow-hidden rounded-md backdrop-blur">
           {(["primary", "secondary", "accent", "sub"] as Category[]).map((k) => (
             <div key={k} className="flex items-center gap-2 rounded-md border bg-background/40 p-2">
               <span className="w-14 shrink-0 text-xs text-muted-foreground">{labelByCat[k]}</span>

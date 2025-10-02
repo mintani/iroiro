@@ -15,18 +15,19 @@ export const SortableUnit: React.FC<SortableUnitProps> = ({ id, variant }) => {
     id,
   });
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes} className="h-full">
       <Unit
         variant={variant}
         size="lg"
         allowedKinds={["source", "sampler", "effect-adjustment", "effect-shifter"]}
+        dragHandleProps={listeners}
       />
     </div>
   );
