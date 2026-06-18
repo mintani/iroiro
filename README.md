@@ -1,4 +1,4 @@
-# iroiro
+# iroiro(end of development)
 
 A color extraction and palette editing tool. Extract colors from images, visualize them in 3D space, edit palettes, and export as theme files.
 <img width="2879" height="1615" alt="image" src="https://github.com/user-attachments/assets/0d0d5830-0884-4c0a-b4b9-9cc91041889c" />
