@@ -20,16 +20,16 @@ A color extraction and palette editing tool. Extract colors from images, visuali
 - TypeScript 5
 - Tailwind CSS 4
 - shadcn/ui
-- Three.js / React Three Fiber
-- Better Auth for authentication
-- PostgreSQL with Prisma
-- Hono for API routes
+- Three.js
+- oxlint / oxfmt for linting and formatting
+- lefthook for git hooks
+- vitest for tests
+
+The app runs entirely in the browser. There is no server, database or API.
 
 ## Prerequisites
 
-- Node.js 18 or later
-- pnpm
-- Docker and Docker Compose
+- [Bun](https://bun.sh) 1.3 or later
 
 ## Setup
 
@@ -38,40 +38,13 @@ A color extraction and palette editing tool. Extract colors from images, visuali
 ```bash
 git clone <repository-url>
 cd iroiro
-pnpm install
+bun install
 ```
 
-2. Copy the environment file and configure it:
+2. Start the development server:
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env` and fill in the required values:
-
-- `DATABASE_URL`: PostgreSQL connection string (default: `postgresql://postgres:postgres@localhost:5432/app`)
-- `NEXT_PUBLIC_BETTER_AUTH_URL`: Application URL (default: `http://localhost:3000`)
-- `BETTER_AUTH_SECRET`: Generate with `pnpx @better-auth/cli secret`
-- `GITHUB_ID` and `GITHUB_SECRET`: GitHub OAuth credentials (optional)
-- S3 configuration: Optional for image storage
-
-3. Start the database:
-
-```bash
-docker compose up -d
-```
-
-4. Generate Prisma client and push schema:
-
-```bash
-pnpx @better-auth/cli generate
-pnpm db push
-```
-
-5. Start the development server:
-
-```bash
-pnpm dev
+bun dev
 ```
 
 Open http://localhost:3000 in your browser.
@@ -106,15 +79,19 @@ Click the "Flip" button on each module to access its configuration panel. Config
 
 ## Available Scripts
 
-- `pnpm dev`: Start development server with Turbo
-- `pnpm build`: Build for production
-- `pnpm start`: Start production server
-- `pnpm lint`: Run ESLint
-- `pnpm lint:fix`: Fix linting issues
-- `pnpm typecheck`: Run TypeScript type checking
-- `pnpm fmt:check`: Check code formatting
-- `pnpm fmt:write`: Format code with Prettier
-- `pnpm db`: Access Prisma CLI
+| Script               | Description                         |
+| -------------------- | ----------------------------------- |
+| `bun dev`            | Start development server with Turbo |
+| `bun run build`      | Build for production                |
+| `bun run start`      | Start production server             |
+| `bun run lint`       | Run oxlint                          |
+| `bun run lint:fix`   | Run oxlint and apply fixes          |
+| `bun run format`     | Check formatting with oxfmt         |
+| `bun run format:fix` | Format with oxfmt                   |
+| `bun run check`      | Run lint and format checks          |
+| `bun run check:fix`  | Run lint and format with fixes      |
+| `bun run typecheck`  | Type check with tsgo                |
+| `bun run test`       | Run tests with vitest               |
 
 ## Project Structure
 
@@ -123,29 +100,22 @@ src/
 ├── app/
 │   ├── (display)/          # Main application page
 │   │   └── _components/    # Color tool modules
-│   ├── api/                # API routes (Hono + Better Auth)
-│   ├── about/              # About page
-│   └── dashboard/          # Dashboard page
+│   └── about/              # About page
 ├── components/
-│   ├── auth/               # Authentication components
 │   ├── layout/             # Layout components
 │   ├── misc/               # Utility components
 │   ├── providers/          # React context providers
 │   └── ui/                 # shadcn/ui components
-└── lib/
-    ├── auth.ts             # Better Auth configuration
-    ├── auth-client.ts      # Auth client utilities
-    ├── db.ts               # Prisma client
-    ├── hono.ts             # Hono RPC client
-    └── utils.ts            # Utility functions
+├── lib/
+│   └── utils.ts            # Utility functions
+└── types/                  # Ambient type declarations
 ```
 
 ## Development Notes
 
-- The project uses pnpm for package management
-- ESLint and Prettier are configured for code quality
-- Husky and lint-staged ensure code quality on commits
-- Environment variables are validated with Zod in `src/env.ts`
+- The project uses bun for package management and script running
+- oxlint and oxfmt handle linting and formatting
+- lefthook runs lint and format on commit, and `check` / `typecheck` on push
 - Use absolute imports with `@/` alias
 
 ## License
