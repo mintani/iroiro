@@ -55,6 +55,7 @@ export const ThemeSuggestion = ({
           type="single"
           size="sm"
           variant="outline"
+          aria-label="Theme mode"
           value={mode}
           onValueChange={(next) => {
             if (next === "light" || next === "dark") onMode(next);

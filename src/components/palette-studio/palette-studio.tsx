@@ -21,19 +21,33 @@ import { useMemo, useRef, useState } from "react";
 
 export const PaletteStudio = () => {
   const studio = usePalette();
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const [modePick, setModePick] = useState<ThemeMode | null>(null);
+  const [pick, setPick] = useState<{ mode: ThemeMode; appMode: ThemeMode } | null>(null);
   const [preview, setPreview] = useState(false);
   const drop = useDropTarget(studio.open, studio.rejectEmptyDrop);
 
-  // Follows the app theme until the visitor picks a side for themselves.
-  const mode: ThemeMode = modePick ?? (resolvedTheme === "dark" ? "dark" : "light");
+  const appMode: ThemeMode = resolvedTheme === "dark" ? "dark" : "light";
+  // A pick holds only until the app theme moves. The preview writes its tokens over the document,
+  // where they outrank the .dark class, so the header toggle would look dead otherwise: this way it
+  // re-derives the theme in the mode it switched to.
+  const mode: ThemeMode = pick?.appMode === appMode ? pick.mode : appMode;
   const theme = useMemo(() => suggestTheme(studio.palette, mode), [studio.palette, mode]);
   const hasPalette = studio.palette.length > 0;
 
   useThemePreview(hasPalette ? theme : null, preview);
+
+  const onMode = (next: ThemeMode) => {
+    setPick({ mode: next, appMode });
+    // A previewing page is wearing this theme, so its dark: variants have to move with the pick.
+    if (preview) setTheme(next);
+  };
+
+  const onPreview = (next: boolean) => {
+    setPreview(next);
+    if (next && mode !== appMode) setTheme(mode);
+  };
 
   const openPicker = () => fileInput.current?.click();
 
@@ -112,9 +126,9 @@ export const PaletteStudio = () => {
                   <ThemeSuggestion
                     theme={theme}
                     mode={mode}
-                    onMode={setModePick}
+                    onMode={onMode}
                     preview={preview}
-                    onPreview={setPreview}
+                    onPreview={onPreview}
                   />
                 </div>
                 <div>
