@@ -21,7 +21,7 @@ export const HarmonyRows = ({ base }: { base: Rgb }) => {
     <ul className="mt-4 grid gap-3">
       {ROWS.map(([key, label]) => (
         <li key={key} className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="w-40 shrink-0 text-xs text-muted-foreground">{label}</span>
+          <span className="w-full text-xs text-muted-foreground sm:w-40 sm:shrink-0">{label}</span>
           <span className="flex flex-wrap gap-1.5">
             <SwatchButton color={base} name="base color" className="h-9 w-14" />
             {sets[key].map((color, index) => (

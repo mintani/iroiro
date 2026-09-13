@@ -128,7 +128,7 @@ export const ExportPanel = ({ theme, palette }: ExportPanelProps) => {
             <Download className="size-3.5" aria-hidden="true" />
             Download
           </Button>
-          <span className="label-mono text-muted-foreground">{exportFileName(format)}</span>
+          <span className="font-mono text-xs text-muted-foreground">{exportFileName(format)}</span>
         </div>
       </TabsContent>
     </Tabs>

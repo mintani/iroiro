@@ -57,9 +57,7 @@ export const ImagePreview = ({
           <label htmlFor="color-count" className="text-sm font-medium">
             Colors
           </label>
-          <span className="label-mono text-muted-foreground tabular-nums">
-            {colorCount} requested
-          </span>
+          <span className="font-mono text-xs text-muted-foreground tabular-nums">{colorCount}</span>
         </div>
         <Slider
           id="color-count"

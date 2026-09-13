@@ -30,7 +30,7 @@ export const TextOnColor = ({ palette }: { palette: PaletteEntry[] }) => (
             className="flex items-center gap-2 rounded-md px-3 py-2 ring-1 ring-foreground/10 ring-inset focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span className="text-sm font-medium">Aa</span>
-            <span className="label-mono tabular-nums">{ratio}</span>
+            <span className="font-mono text-[11px] font-medium tabular-nums">{ratio}</span>
           </button>
         </li>
       );
