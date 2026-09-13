@@ -1,6 +1,5 @@
 "use client";
 
-import { UserMenu } from "@/components/auth/user-menu";
 import { ThemeToggle } from "@/components/misc/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Home, Info, LayoutDashboard } from "lucide-react";
@@ -58,7 +57,6 @@ export const Sidebar = () => {
       </nav>
       <div className="mt-auto flex flex-col items-center pb-4">
         <ThemeToggle variant="icon" />
-        <UserMenu />
       </div>
     </aside>
   );
