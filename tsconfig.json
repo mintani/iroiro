@@ -28,8 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
-    ".next/types/**/*.ts",
-    "prettier.config.mjs"
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
