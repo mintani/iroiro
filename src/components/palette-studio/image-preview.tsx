@@ -55,13 +55,12 @@ export const ImagePreview = ({
 
       <div>
         <div className="flex items-baseline justify-between gap-3">
-          <label htmlFor="color-count" className="text-sm font-medium">
-            Colors
-          </label>
+          {/* The slider root is a span, which nothing can be labelled against: the thumb's
+              aria-label is its accessible name, so this is plain text. */}
+          <span className="text-sm font-medium">Colors</span>
           <span className="font-mono text-xs text-muted-foreground tabular-nums">{colorCount}</span>
         </div>
         <Slider
-          id="color-count"
           aria-label="Number of colors to extract"
           className="mt-3"
           min={MIN_COLORS}
@@ -70,8 +69,11 @@ export const ImagePreview = ({
           value={[colorCount]}
           onValueChange={(next) => onColorCount(next[0] ?? colorCount)}
         />
-        <p aria-live="polite" className="mt-3 label-mono text-muted-foreground tabular-nums">
-          {extracting ? "Extracting…" : `${paletteSize} colors found`}
+        <p className="mt-3 label-mono text-muted-foreground tabular-nums">
+          {/* Only the settled count is announced: the slider reads its own value out while it
+              moves, and a result per step would talk over it. */}
+          <span aria-live="polite">{extracting ? "" : `${paletteSize} colors found`}</span>
+          {extracting ? <span>Extracting…</span> : null}
         </p>
       </div>
     </div>
