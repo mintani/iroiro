@@ -44,7 +44,8 @@ shows more than a still would._
 - oxlint and oxfmt for linting and formatting
 - lefthook for git hooks
 - vitest with jsdom and Testing Library
-- Cloudflare Workers via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare)
+- Cloudflare Workers via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare), deployed
+  with [Alchemy](https://alchemy.run)
 
 The app runs entirely in the browser. There is no server, database or API — the Worker serves the
 prerendered page and the static assets, and the color math runs on the client.
@@ -92,51 +93,42 @@ usable on its own.
 
 ## Available Scripts
 
-| Script               | Description                                     |
-| -------------------- | ----------------------------------------------- |
-| `bun dev`            | Start the development server                    |
-| `bun run build`      | Build for production                            |
-| `bun run start`      | Start the Node production server                |
-| `bun run preview`    | Build and serve the Workers bundle locally      |
-| `bun run deploy`     | Build and deploy to Cloudflare Workers          |
-| `bun run upload`     | Build and upload a version without releasing it |
-| `bun run cf-typegen` | Regenerate the Cloudflare binding types         |
-| `bun run lint`       | Run oxlint                                      |
-| `bun run lint:fix`   | Run oxlint and apply fixes                      |
-| `bun run format`     | Check formatting with oxfmt                     |
-| `bun run format:fix` | Format with oxfmt                               |
-| `bun run check`      | Run lint and format checks                      |
-| `bun run check:fix`  | Run lint and format with fixes                  |
-| `bun run typecheck`  | Type check with tsgo                            |
-| `bun run test`       | Run tests with vitest                           |
+| Script               | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `bun dev`            | Start the development server                  |
+| `bun run build`      | Build for production                          |
+| `bun run start`      | Start the Node production server              |
+| `bun run preview`    | Serve the Worker bundle locally under workerd |
+| `bun run deploy`     | Deploy to Cloudflare Workers                  |
+| `bun run destroy`    | Delete the deployed Worker                    |
+| `bun run lint`       | Run oxlint                                    |
+| `bun run lint:fix`   | Run oxlint and apply fixes                    |
+| `bun run format`     | Check formatting with oxfmt                   |
+| `bun run format:fix` | Format with oxfmt                             |
+| `bun run check`      | Run lint and format checks                    |
+| `bun run check:fix`  | Run lint and format with fixes                |
+| `bun run typecheck`  | Type check with tsgo                          |
+| `bun run test`       | Run tests with vitest                         |
 
 ## Deploy to Cloudflare Workers
 
-The app is built for Cloudflare Workers with [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare).
-`wrangler.jsonc` holds the Worker configuration and `open-next.config.ts` the adapter configuration.
+The deployment is two files: `alchemy.run.ts` declares the Worker and `open-next.config.ts`
+configures the adapter. [Alchemy](https://alchemy.run) runs it — it builds the app with
+[`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare) and uploads the Worker with the
+prerendered page and the static assets. There is no wrangler file.
 
-### Prerequisites
+### 1. Connect your Cloudflare account
 
-- A Cloudflare account
-- Log in once, which opens a browser for OAuth:
-
-```bash
-bunx wrangler login
-```
-
-### 1. Preview locally
-
-This builds the Worker bundle and serves it with `workerd`, the same runtime Cloudflare uses in
-production. It is the last check before deploying:
+Credentials live in `~/.alchemy/profiles.json`, never in the repo. Connect the account once — the
+prompt offers OAuth in the browser or an API token you paste:
 
 ```bash
-bun run preview
+bunx alchemy profile edit --add Cloudflare
 ```
 
-Open http://localhost:8787.
+`bunx alchemy profile show` lists what is connected.
 
-`bun dev` is still the fastest loop for day-to-day work; it runs the normal Next.js dev server on
-http://localhost:3000.
+CI has no profile: set `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` there instead.
 
 ### 2. Deploy
 
@@ -144,33 +136,61 @@ http://localhost:3000.
 bun run deploy
 ```
 
-Wrangler prints the deployed URL when it finishes. With the Worker named `iroiro` in `wrangler.jsonc`
-it is:
+The first run asks twice. Once to create the state store, where Alchemy records what it deployed: a
+Worker named `alchemy-state-store` and two secrets in the account Secrets Store. Then once to
+approve the plan (`+ Website`). Nothing about either lands in the repo.
+
+It prints the URL when it finishes:
 
 ```
-https://iroiro.<your-account-subdomain>.workers.dev
-```
-
-The account subdomain is shown in the Cloudflare dashboard under **Workers & Pages**. If you rename
-the Worker, change the `name` field and the `WORKER_SELF_REFERENCE` service binding in
-`wrangler.jsonc` together, because the binding points the Worker at itself by name.
-
-### 3. Add a custom domain (optional)
-
-The domain must be a zone on the same Cloudflare account. Add a route to `wrangler.jsonc`:
-
-```jsonc
 {
-  "routes": [{ "pattern": "iroiro.example.com", "custom_domain": true }]
+  url: "https://iroiro.<your-account-subdomain>.workers.dev",
 }
 ```
 
-Then run `bun run deploy` again. Wrangler creates the DNS record and the certificate for you.
+The Worker name is pinned to `iroiro` in `alchemy.run.ts`, so the URL never changes. The account
+subdomain is shown in the Cloudflare dashboard under **Workers & Pages**. Deploys run in the `prod`
+stage, so your machine and CI update the same Worker instead of fighting over the name.
 
-You can also do this in the dashboard: **Workers & Pages** -> your Worker -> **Settings** ->
-**Domains & Routes** -> **Add**.
+Run it again after a change. Alchemy hashes the files the build reads, so an unchanged tree reports
+no changes and skips the build.
 
-### 4. Deploy from GitHub Actions (optional)
+### 3. Preview locally (optional)
+
+```bash
+bun run preview
+```
+
+This builds the Worker and serves it under `workerd`, the runtime Cloudflare uses, with production
+asset routing. It reads the credentials from step 1, because the Worker's configuration is resolved
+against the account even though the server is local.
+
+`bun dev` is still the fastest loop for day-to-day work; it runs the normal Next.js dev server on
+http://localhost:3000.
+
+### 4. Add a custom domain (optional)
+
+The domain must already be a zone on the same Cloudflare account. Add `domain` to the Website:
+
+```ts
+export const Website = Cloudflare.Website.Nextjs("Website", {
+  name: "iroiro",
+  domain: "iroiro.example.com",
+});
+```
+
+`bun run deploy` creates the DNS record and the certificate, and the stack output becomes
+`https://iroiro.example.com`. Use `routes` instead when a pattern has to match paths.
+
+### 5. Tear it down
+
+```bash
+bun run destroy
+```
+
+This deletes the Worker and its assets. The state store Worker stays behind for the next deploy.
+
+### Deploy from GitHub Actions (optional)
 
 Add two repository secrets:
 
@@ -178,7 +198,8 @@ Add two repository secrets:
   Workers* template
 - `CLOUDFLARE_ACCOUNT_ID` - shown on the Workers overview page
 
-Then save this as `.github/workflows/deploy.yaml`:
+Deploy once from your machine first, so the state store exists without a prompt in CI. Then save
+this as `.github/workflows/deploy.yaml`:
 
 ```yaml
 name: Deploy
@@ -205,26 +226,27 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
-      - name: Build
-        run: bunx opennextjs-cloudflare build
-
       - name: Deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+        run: bun run deploy --yes
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 ```
 
 ### Notes
 
-- `cloudflare-env.d.ts` is generated, not committed. Run `bun run cf-typegen` after changing
-  bindings in `wrangler.jsonc`.
 - `public/_headers` marks `/_next/static/*` as immutable so Cloudflare caches hashed assets for a
   year.
 - `next/image` optimization is off (`images.unoptimized`), so the Worker needs no Images binding.
-- There is no incremental cache binding. Every route is statically prerendered, so there is nothing
-  to revalidate.
+- The incremental cache reads the payloads shipped with the static assets and never writes. Every
+  route is prerendered, so there is nothing to revalidate; a write attempt logs
+  `StaticAssetsIncrementalCache: Failed to set to read-only cache` and changes nothing.
+- `bun run preview` clears `npm_execpath` so the Alchemy CLI runs under node. Under bun, its dev
+  watcher also hooks the project's own `node_modules` and breaks CJS imports there
+  (alchemy 2.0.0-beta.77).
+- Alchemy is a beta on an Effect release candidate: `package.json` pins `alchemy`, `effect` and the
+  `@effect/*` packages Alchemy pulls in to the exact versions that work together. Bump them
+  together.
 
 ## Project Structure
 
