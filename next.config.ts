@@ -12,4 +12,8 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-initOpenNextCloudflareForDev();
+// Only `next dev` needs the Cloudflare bindings shim. Calling it during a build
+// starts a miniflare instance that outlives the build process.
+if (process.env.NODE_ENV === "development") {
+  initOpenNextCloudflareForDev();
+}
