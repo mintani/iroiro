@@ -112,6 +112,7 @@ export const VisualPool: React.FC<{ sourceId?: string; outId?: string; channel?:
                 }`}
                 style={{ background: `rgb(${c[0]},${c[1]},${c[2]})` }}
                 title={`rgb(${c.join(",")})`}
+                aria-label={`rgb(${c.join(",")})`}
               />
             );
           })}
@@ -149,6 +150,7 @@ export const VisualPool: React.FC<{ sourceId?: string; outId?: string; channel?:
                       }}
                       onClick={() => setPools((all) => ({ ...all, [k]: [] }))}
                       title="Clear"
+                      aria-label="Clear"
                     >
                       <div className="absolute inset-0 flex items-center justify-center rounded bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100">
                         <span className="text-xs font-bold">×</span>
@@ -186,12 +188,14 @@ export const VisualPool: React.FC<{ sourceId?: string; outId?: string; channel?:
             className="size-6 rounded-full border border-gray-300 bg-white transition-all hover:scale-110 hover:ring-2 hover:ring-foreground/50"
             onClick={() => addCustomColor("#ffffff")}
             title="Add white"
+            aria-label="Add white"
           />
           <button
             type="button"
             className="size-6 rounded-full border border-gray-700 bg-black transition-all hover:scale-110 hover:ring-2 hover:ring-foreground/50"
             onClick={() => addCustomColor("#000000")}
             title="Add black"
+            aria-label="Add black"
           />
         </div>
         <div className="flex gap-2">

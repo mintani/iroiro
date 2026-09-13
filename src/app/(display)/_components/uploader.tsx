@@ -11,7 +11,7 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
-  const dropRef = React.useRef<HTMLDivElement | null>(null);
+  const dropRef = React.useRef<HTMLButtonElement | null>(null);
 
   // Handle file selection and preview
   const handleFileChange = React.useCallback(
@@ -105,14 +105,10 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
       />
 
       {!previewUrl && (
-        <div
+        <button
           ref={dropRef}
-          role="button"
-          tabIndex={0}
+          type="button"
           onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-          }}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           className="glass relative flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed transition-all hover:border-foreground/20"
@@ -128,7 +124,7 @@ export const Uploader = ({ id = "source" }: { id?: string }) => {
             </div>
             <div className="text-[10px] text-muted-foreground">PNG, JPG, WEBP up to 10MB</div>
           </div>
-        </div>
+        </button>
       )}
 
       {previewUrl && (

@@ -50,6 +50,7 @@ export const ImageModal: React.FC<Props> = ({ src, open, onOpenChange, title }) 
 
   return createPortal(
     <div
+      role="presentation"
       className="fixed inset-0 z-[1000] flex flex-col overflow-hidden bg-black/90 select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onOpenChange(false);
@@ -116,6 +117,7 @@ export const ImageModal: React.FC<Props> = ({ src, open, onOpenChange, title }) 
 
       <div className="relative z-[1000] flex min-h-0 flex-1 items-center justify-center">
         <div
+          role="presentation"
           className="relative max-h-[90vh] max-w-[90vw] cursor-grab active:cursor-grabbing"
           style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})` }}
           onMouseDown={(e) => {

@@ -21,6 +21,13 @@
     "import/no-unassigned-import": "off"
   },
   "settings": {
+    "jsx-a11y": {
+      "components": {
+        "Button": "button",
+        "Input": "input",
+        "Label": "label"
+      }
+    },
     "next": {
       "rootDir": ["."]
     }
