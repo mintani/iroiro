@@ -1,7 +1,8 @@
 {
-  "name": "fullstack-template",
+  "name": "iroiro",
   "version": "0.1.0",
   "private": true,
+  "description": "A color extraction and palette editing tool that runs entirely in the browser.",
   "type": "module",
   "scripts": {
     "build": "next build",
