@@ -31,6 +31,9 @@ const FALLBACK_BASE: Rgb = [90, 100, 130];
 
 const EMPTY_PALETTE: PaletteEntry[] = [];
 
+/** Shown when a drop carried no file at all. */
+const NO_FILE = "That drop carried no file. Drop an image file, or paste one.";
+
 /** Shown when an image decodes but holds nothing a palette could be read from. */
 const NO_PIXELS = "That image has no opaque pixels to read.";
 
@@ -51,6 +54,8 @@ export type PaletteStudioState = {
   baseIndex: number;
   baseColor: Rgb;
   open: (file: File) => void;
+  /** Reports a drop that carried no file, so the visitor is told why nothing happened. */
+  rejectEmptyDrop: () => void;
   openSample: () => void;
   clear: () => void;
   setColorCount: (count: number) => void;
@@ -145,6 +150,8 @@ export const usePalette = (): PaletteStudioState => {
       });
   }, []);
 
+  const rejectEmptyDrop = useCallback(() => setError(NO_FILE), []);
+
   const openSample = useCallback(() => {
     const ticket = ++request.current;
     setError(null);
@@ -201,6 +208,7 @@ export const usePalette = (): PaletteStudioState => {
     baseIndex: safeBaseIndex,
     baseColor: palette[safeBaseIndex]?.color ?? FALLBACK_BASE,
     open,
+    rejectEmptyDrop,
     openSample,
     clear,
     setColorCount,

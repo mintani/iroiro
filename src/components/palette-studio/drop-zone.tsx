@@ -1,48 +1,30 @@
 "use client";
 
+import { useDropTarget } from "@/components/palette-studio/use-drop-target";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CircleAlert, ImagePlus } from "lucide-react";
-import { type DragEvent, useState } from "react";
 
 type DropZoneProps = {
   /** Opens the file picker. */
   onPick: () => void;
   onFile: (file: File) => void;
+  /** Called for a drop that carried no file, so the message below can explain it. */
+  onEmptyDrop: () => void;
   onSample: () => void;
   error: string | null;
   busy: boolean;
 };
 
-export const DropZone = ({ onPick, onFile, onSample, error, busy }: DropZoneProps) => {
-  const [dragging, setDragging] = useState(false);
-
-  const onDragOver = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    setDragging(true);
-  };
-
-  const onDragLeave = (event: DragEvent<HTMLElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-    setDragging(false);
-  };
-
-  const onDrop = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    setDragging(false);
-    const dropped = event.dataTransfer.files.item(0);
-    if (dropped) onFile(dropped);
-  };
+export const DropZone = ({ onPick, onFile, onEmptyDrop, onSample, error, busy }: DropZoneProps) => {
+  const { dragging, handlers } = useDropTarget(onFile, onEmptyDrop);
 
   return (
     <div>
       <button
         type="button"
         onClick={onPick}
-        onDragOver={onDragOver}
-        onDragEnter={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
+        {...handlers}
         className={cn(
           "flex w-full flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-12 text-center transition-colors sm:py-16",
           dragging

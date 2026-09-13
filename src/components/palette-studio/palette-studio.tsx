@@ -10,13 +10,14 @@ import { ScaleRow } from "@/components/palette-studio/scale-row";
 import { StudioSection, StudioSubhead } from "@/components/palette-studio/section";
 import { type ThemeMode, ThemeSuggestion } from "@/components/palette-studio/theme-suggestion";
 import { TextOnColor } from "@/components/palette-studio/text-on-color";
+import { useDropTarget } from "@/components/palette-studio/use-drop-target";
 import { usePalette } from "@/components/palette-studio/use-palette";
 import { useThemePreview } from "@/components/palette-studio/use-theme-preview";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { formatHex, suggestTheme } from "@/lib/color";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { type DragEvent, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 export const PaletteStudio = () => {
   const studio = usePalette();
@@ -25,7 +26,7 @@ export const PaletteStudio = () => {
 
   const [modePick, setModePick] = useState<ThemeMode | null>(null);
   const [preview, setPreview] = useState(false);
-  const [dragging, setDragging] = useState(false);
+  const drop = useDropTarget(studio.open, studio.rejectEmptyDrop);
 
   // Follows the app theme until the visitor picks a side for themselves.
   const mode: ThemeMode = modePick ?? (resolvedTheme === "dark" ? "dark" : "light");
@@ -36,34 +37,15 @@ export const PaletteStudio = () => {
 
   const openPicker = () => fileInput.current?.click();
 
-  const onDragOver = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    setDragging(true);
-  };
-
-  const onDragLeave = (event: DragEvent<HTMLElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-    setDragging(false);
-  };
-
-  const onDrop = (event: DragEvent<HTMLElement>) => {
-    event.preventDefault();
-    setDragging(false);
-    const dropped = event.dataTransfer.files.item(0);
-    if (dropped) studio.open(dropped);
-  };
-
   return (
     <TooltipProvider delayDuration={500}>
       <div
-        // With an image on screen the whole studio takes a drop, so replacing is one gesture.
-        onDragOver={hasPalette ? onDragOver : undefined}
-        onDragEnter={hasPalette ? onDragOver : undefined}
-        onDragLeave={hasPalette ? onDragLeave : undefined}
-        onDrop={hasPalette ? onDrop : undefined}
+        // With an image on screen the whole studio takes a drop, so replacing is one gesture. It
+        // hangs off the preview, not the palette: an image that yielded nothing still takes a drop.
+        {...(studio.previewUrl ? drop.handlers : {})}
         className={cn(
           "mt-8 flex flex-col gap-7 rounded-lg",
-          dragging && "outline-2 outline-offset-8 outline-ring outline-dashed"
+          drop.dragging && "outline-2 outline-offset-8 outline-ring outline-dashed"
         )}
       >
         <input
@@ -94,6 +76,7 @@ export const PaletteStudio = () => {
             <DropZone
               onPick={openPicker}
               onFile={studio.open}
+              onEmptyDrop={studio.rejectEmptyDrop}
               onSample={studio.openSample}
               error={studio.error}
               busy={studio.status === "loading"}
