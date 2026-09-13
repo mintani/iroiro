@@ -27,6 +27,9 @@ const FALLBACK_BASE: Rgb = [90, 100, 130];
 
 const EMPTY_PALETTE: PaletteEntry[] = [];
 
+/** Shown when an image decodes but holds nothing a palette could be read from. */
+const NO_PIXELS = "That image has no opaque pixels to read.";
+
 /** Where the studio is in the drop, extract, export flow. */
 export type StudioStatus = "empty" | "loading" | "ready" | "error";
 
@@ -110,9 +113,19 @@ export const usePalette = (): PaletteStudioState => {
       .then((image) => {
         if (ticket !== request.current) return;
         const sampled = samplePixels(image);
+        // A fully transparent image decodes fine and clusters into nothing, so it never becomes
+        // the source: the visitor would be left reading "0 colors found" with no reason why.
+        if (sampled.length === 0) {
+          setError(NO_PIXELS);
+          setStatus("error");
+          return;
+        }
+
         const url = URL.createObjectURL(file);
         urls.current.push(url);
         startTransition(() => {
+          // A file rejected while this one was decoding left a message behind.
+          setError(null);
           setSource({ name: file.name, url });
           setPixels(sampled);
           setBaseIndex(0);
@@ -127,11 +140,17 @@ export const usePalette = (): PaletteStudioState => {
   }, []);
 
   const openSample = useCallback(() => {
+    const ticket = ++request.current;
     setError(null);
     setStatus("loading");
     void createSampleImageFile()
-      .then(open)
+      .then((file) => {
+        // An image dropped while the sample was being drawn wins over the sample.
+        if (ticket !== request.current) return;
+        open(file);
+      })
       .catch(() => {
+        if (ticket !== request.current) return;
         setError("The sample image could not be drawn in this browser.");
         setStatus("error");
       });
