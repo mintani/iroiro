@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.3.13",
   "scripts": {
     "build": "next build",
     "check": "oxlint src && oxfmt --check src",
@@ -16,13 +15,7 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,mdx}": [
-      "prettier --write",
-      "eslint --fix"
-    ]
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",
@@ -50,12 +43,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
+    "lefthook": "^2.1.12",
     "oxfmt": "^0.67.0",
     "oxlint": "^1.82.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "bun@1.3.13"
 }
