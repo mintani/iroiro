@@ -1,32 +1,53 @@
-# iroiro(end of development)
+# iroiro
 
-A color extraction and palette editing tool. Extract colors from images, visualize them in 3D space, edit palettes, and export as theme files.
-<img width="2879" height="1615" alt="image" src="https://github.com/user-attachments/assets/0d0d5830-0884-4c0a-b4b9-9cc91041889c" />
+Drop an image, take its colors. iroiro pulls the dominant colors out of a picture, suggests a
+contrast-checked UI theme around them, and hands the result back as CSS, Tailwind, SCSS, JSON or a
+plain hex list. Everything happens in the browser: the file is never uploaded.
 
+_No screenshot in this README — the tool is one page, and `bun dev` plus any image on your desktop
+shows more than a still would._
+
+## The flow
+
+1. **Drop** — drop a file on the target, paste from the clipboard, pick one through the file dialog,
+   or press **Try a sample** to generate an image on a canvas.
+2. **Extract** — the image is decoded and capped at 512 px on its long side, sampled at a fixed
+   stride, then clustered with k-means in CIELAB. You get 2 to 12 colors, each with the share of the
+   image it covers.
+3. **Export** — copy any hex with one click, or take the whole theme as CSS, Tailwind, SCSS, JSON or
+   a hex list.
 
 ## Features
 
-- Image upload and color extraction with K-means clustering
-- Color visualization (3D sphere, pie chart, color pool)
-- Image effects (brightness/contrast/saturation, hue shift)
-- Contrast checker for accessibility
-- Theme export in multiple formats
-- Drag and drop interface for editing color arrays
+- Drag and drop, paste anywhere on the page, a file picker, or a generated sample image
+- Dominant colors with their share of the image, from 2 to 12 clusters
+- A suggested semantic theme — background, foreground, primary, secondary, accent, muted, border —
+  with every foreground graded against WCAG AA and AAA
+- **Preview theme on this page**: the suggestion is painted onto iroiro's own tokens, so you see it
+  on real UI before you export it
+- Harmonies of the selected base color: complementary, analogous, triadic, split-complementary,
+  tetradic
+- A 50 to 950 ramp of the base color
+- The readable text color for every palette color, with the ratio it reaches
+- Exports: CSS custom properties (hex or oklch), a Tailwind v4 `@theme` block, SCSS variables, JSON,
+  and a plain hex list — copy or download
+- Light and dark, keyboard accessible, and usable from 400 px up
 
 ## Tech Stack
 
 - Next.js 16 with App Router (Turbopack)
 - React 19
-- TypeScript 5
+- TypeScript 5, type-checked with tsgo
 - Tailwind CSS 4
-- shadcn/ui
-- Three.js
-- Cloudflare Workers via `@opennextjs/cloudflare`
-- oxlint / oxfmt for linting and formatting
+- shadcn/ui (new-york) with sonner for toasts
+- bun for packages and scripts
+- oxlint and oxfmt for linting and formatting
 - lefthook for git hooks
-- vitest for tests
+- vitest with jsdom and Testing Library
+- Cloudflare Workers via [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare)
 
-The app runs entirely in the browser. There is no server, database or API.
+The app runs entirely in the browser. There is no server, database or API — the Worker serves the
+prerendered page and the static assets, and the color math runs on the client.
 
 ## Prerequisites
 
@@ -52,31 +73,22 @@ Open http://localhost:3000 in your browser.
 
 ## Usage
 
-### Basic Workflow
+- **Colors**: the slider sets how many clusters k-means looks for. Changing it re-extracts from the
+  pixels already sampled, so it is cheap.
+- **Base color**: clicking a swatch copies its hex *and* makes it the base for the harmonies, the
+  ramp and the suggested theme. The selected swatch carries a ring and a check.
+- **Light / Dark**: the theme suggestion follows the app theme until you pick a side, and the export
+  reflects whichever side is showing.
+- **Keyboard**: every swatch, tab and toggle is a real button. Tab to it, press Enter or Space, and
+  the hex is on your clipboard.
+- Nothing is stored. Reload and the image is gone.
 
-1. **Upload Image**: Click or drag-and-drop an image into the Image Uploader module
-2. **Extract Colors**: Use the Sampler module to extract colors with K-means clustering
-3. **Visualize**: View colors in 3D sphere, pie chart, or color pool
-4. **Edit**: Drag and drop colors in the Color Pool to rearrange
-5. **Export**: Use Theme Exporter to download palette in various formats
+## The color library
 
-### Modules
-
-Each module can be flipped to see configuration options on the back side:
-
-- **Image Uploader**: Upload images via click, drag-and-drop, or paste
-- **Sampler**: Extract colors using K-means algorithm with adjustable parameters
-- **Effect: Adjustment**: Apply brightness, contrast, and saturation adjustments
-- **Effect: Shifter**: Apply hue rotation to images
-- **3D Sphere**: Visualize colors in 3D RGB color space
-- **Contrast Checker**: Check color contrast ratios for accessibility
-- **Pie Chart**: Display color distribution as a pie chart
-- **Color Pool**: Edit color array with drag-and-drop
-- **Theme Exporter**: Export palettes in multiple formats
-
-### Module Configuration
-
-Click the "Flip" button on each module to access its configuration panel. Configure input/output IDs to connect modules together.
+`src/lib/color` is a dependency-free, tested module that does the math: conversions (sRGB, XYZ, Lab,
+LCH, OkLab, OkLCH, HSL), gamut mapping, WCAG contrast, k-means extraction, stride sampling, harmony
+and ramp generation, theme suggestion, and the exporters. It has no DOM or React imports, so it is
+usable on its own.
 
 ## Available Scripts
 
@@ -219,16 +231,19 @@ jobs:
 ```
 src/
 ├── app/
-│   ├── (display)/          # Main application page
-│   │   └── _components/    # Color tool modules
-│   └── about/              # About page
+│   ├── icon.svg            # The four-square mark, served as the favicon
+│   ├── layout.tsx          # Fonts, metadata, theme provider, toaster
+│   └── page.tsx            # The single route: shell + studio
 ├── components/
-│   ├── layout/             # Layout components
-│   ├── misc/               # Utility components
-│   ├── providers/          # React context providers
+│   ├── palette-studio/     # The tool: drop zone, palette, suggestions, export
+│   ├── site/               # Header and footer
+│   ├── misc/               # Theme toggle
+│   ├── providers/          # next-themes provider
 │   └── ui/                 # shadcn/ui components
 ├── lib/
-│   └── utils.ts            # Utility functions
+│   ├── color/              # Pure color math and exporters (tested)
+│   ├── image/              # File decoding and the sample image generator
+│   └── utils.ts            # cn()
 └── types/                  # Ambient type declarations
 ```
 
