@@ -132,8 +132,8 @@ export const PaletteStudio = () => {
               </div>
             </StudioSection>
 
-            <StudioSection title="Export" meta={mode}>
-              <ExportPanel theme={theme} palette={studio.palette} />
+            <StudioSection title="Export">
+              <ExportPanel theme={theme} palette={studio.palette} mode={mode} />
             </StudioSection>
           </>
         ) : null}

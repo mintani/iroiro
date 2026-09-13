@@ -6,6 +6,7 @@ import {
   exportFileName,
   downloadText,
 } from "@/components/palette-studio/download";
+import type { ThemeMode } from "@/components/palette-studio/theme-suggestion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -20,7 +21,7 @@ import {
   toTailwindTheme,
 } from "@/lib/color";
 import { Check, Copy, Download } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const TABS: [ExportFormat, string][] = [
@@ -30,6 +31,9 @@ const TABS: [ExportFormat, string][] = [
   ["json", "JSON"],
   ["hex", "Hex"],
 ];
+
+const isFormat = (value: string): value is ExportFormat =>
+  TABS.some(([format]) => format === value);
 
 const render = (
   format: ExportFormat,
@@ -51,27 +55,68 @@ const render = (
   }
 };
 
-type ExportPanelProps = { theme: Theme; palette: PaletteEntry[] };
+type ExportTabProps = { format: ExportFormat; label: string; text: string };
 
-export const ExportPanel = ({ theme, palette }: ExportPanelProps) => {
-  const [format, setFormat] = useState<ExportFormat>("css");
-  const [colorFormat, setColorFormat] = useState<ColorFormat>("hex");
+/** One tab panel: the rendered export, with a copy and a download of exactly that text. */
+const ExportTab = ({ format, label, text }: ExportTabProps) => {
   const [copied, flash] = useCopiedFlash();
 
-  const label = TABS.find(([value]) => value === format)?.[1] ?? "CSS";
-  const text = useMemo(
-    () => render(format, colorFormat, theme, palette),
-    [format, colorFormat, theme, palette]
+  return (
+    <TabsContent value={format}>
+      {/* The tab panel around this block is focusable, so the overflow is keyboard scrollable. */}
+      <pre className="max-h-80 overflow-auto rounded-md border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
+        <code>{text}</code>
+      </pre>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Button
+          size="sm"
+          onClick={() => {
+            void copyWithToast(text, `the ${label} export`).then((ok) => {
+              if (ok) flash();
+            });
+          }}
+        >
+          {copied ? (
+            <Check className="size-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="size-3.5" aria-hidden="true" />
+          )}
+          {copied ? "Copied" : "Copy"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            downloadText(text, format);
+            toast(`Saving ${exportFileName(format)}`);
+          }}
+        >
+          <Download className="size-3.5" aria-hidden="true" />
+          Download
+        </Button>
+        <span className="font-mono text-xs text-muted-foreground">{exportFileName(format)}</span>
+      </div>
+    </TabsContent>
   );
+};
+
+type ExportPanelProps = { theme: Theme; palette: PaletteEntry[]; mode: ThemeMode };
+
+export const ExportPanel = ({ theme, palette, mode }: ExportPanelProps) => {
+  const [format, setFormat] = useState<ExportFormat>("css");
+  const [colorFormat, setColorFormat] = useState<ColorFormat>("hex");
 
   return (
     <Tabs
       value={format}
-      onValueChange={(next) => setFormat(next as ExportFormat)}
+      onValueChange={(next) => {
+        if (isFormat(next)) setFormat(next);
+      }}
       className="mt-4 gap-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <TabsList>
+        <TabsList aria-label="Export format">
           {TABS.map(([value, name]) => (
             <TabsTrigger key={value} value={value}>
               {name}
@@ -79,58 +124,39 @@ export const ExportPanel = ({ theme, palette }: ExportPanelProps) => {
           ))}
         </TabsList>
 
-        {format === "css" ? (
-          <ToggleGroup
-            type="single"
-            size="sm"
-            variant="outline"
-            value={colorFormat}
-            onValueChange={(next) => {
-              if (next === "hex" || next === "oklch") setColorFormat(next);
-            }}
-          >
-            <ToggleGroupItem value="hex">hex</ToggleGroupItem>
-            <ToggleGroupItem value="oklch">oklch</ToggleGroupItem>
-          </ToggleGroup>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* The hex list is the palette itself, which reads the same in either mode. */}
+          {format === "hex" ? null : (
+            <span className="label-mono text-muted-foreground">theme: {mode}</span>
+          )}
+
+          {format === "css" ? (
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
+              aria-label="CSS color notation"
+              value={colorFormat}
+              onValueChange={(next) => {
+                if (next === "hex" || next === "oklch") setColorFormat(next);
+              }}
+            >
+              <ToggleGroupItem value="hex">hex</ToggleGroupItem>
+              <ToggleGroupItem value="oklch">oklch</ToggleGroupItem>
+            </ToggleGroup>
+          ) : null}
+        </div>
       </div>
 
-      <TabsContent value={format} className="gap-3">
-        {/* The tab panel around this block is focusable, so the overflow is keyboard scrollable. */}
-        <pre className="max-h-80 overflow-auto rounded-md border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
-          <code>{text}</code>
-        </pre>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button
-            size="sm"
-            onClick={() => {
-              void copyWithToast(text, `the ${label} export`).then((ok) => {
-                if (ok) flash();
-              });
-            }}
-          >
-            {copied ? (
-              <Check className="size-3.5" aria-hidden="true" />
-            ) : (
-              <Copy className="size-3.5" aria-hidden="true" />
-            )}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              downloadText(text, format);
-              toast(`Saving ${exportFileName(format)}`);
-            }}
-          >
-            <Download className="size-3.5" aria-hidden="true" />
-            Download
-          </Button>
-          <span className="font-mono text-xs text-muted-foreground">{exportFileName(format)}</span>
-        </div>
-      </TabsContent>
+      {/* A panel per tab, so every trigger's aria-controls points at something. */}
+      {TABS.map(([value, name]) => (
+        <ExportTab
+          key={value}
+          format={value}
+          label={name}
+          text={render(value, colorFormat, theme, palette)}
+        />
+      ))}
     </Tabs>
   );
 };
