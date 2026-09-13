@@ -15,12 +15,13 @@ A color extraction and palette editing tool. Extract colors from images, visuali
 
 ## Tech Stack
 
-- Next.js 15 with App Router
+- Next.js 16 with App Router (Turbopack)
 - React 19
 - TypeScript 5
 - Tailwind CSS 4
 - shadcn/ui
 - Three.js
+- Cloudflare Workers via `@opennextjs/cloudflare`
 - oxlint / oxfmt for linting and formatting
 - lefthook for git hooks
 - vitest for tests
@@ -79,19 +80,139 @@ Click the "Flip" button on each module to access its configuration panel. Config
 
 ## Available Scripts
 
-| Script               | Description                         |
-| -------------------- | ----------------------------------- |
-| `bun dev`            | Start development server with Turbo |
-| `bun run build`      | Build for production                |
-| `bun run start`      | Start production server             |
-| `bun run lint`       | Run oxlint                          |
-| `bun run lint:fix`   | Run oxlint and apply fixes          |
-| `bun run format`     | Check formatting with oxfmt         |
-| `bun run format:fix` | Format with oxfmt                   |
-| `bun run check`      | Run lint and format checks          |
-| `bun run check:fix`  | Run lint and format with fixes      |
-| `bun run typecheck`  | Type check with tsgo                |
-| `bun run test`       | Run tests with vitest               |
+| Script               | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `bun dev`            | Start the development server                    |
+| `bun run build`      | Build for production                            |
+| `bun run start`      | Start the Node production server                |
+| `bun run preview`    | Build and serve the Workers bundle locally      |
+| `bun run deploy`     | Build and deploy to Cloudflare Workers          |
+| `bun run upload`     | Build and upload a version without releasing it |
+| `bun run cf-typegen` | Regenerate the Cloudflare binding types         |
+| `bun run lint`       | Run oxlint                                      |
+| `bun run lint:fix`   | Run oxlint and apply fixes                      |
+| `bun run format`     | Check formatting with oxfmt                     |
+| `bun run format:fix` | Format with oxfmt                               |
+| `bun run check`      | Run lint and format checks                      |
+| `bun run check:fix`  | Run lint and format with fixes                  |
+| `bun run typecheck`  | Type check with tsgo                            |
+| `bun run test`       | Run tests with vitest                           |
+
+## Deploy to Cloudflare Workers
+
+The app is built for Cloudflare Workers with [`@opennextjs/cloudflare`](https://opennext.js.org/cloudflare).
+`wrangler.jsonc` holds the Worker configuration and `open-next.config.ts` the adapter configuration.
+
+### Prerequisites
+
+- A Cloudflare account
+- Log in once, which opens a browser for OAuth:
+
+```bash
+bunx wrangler login
+```
+
+### 1. Preview locally
+
+This builds the Worker bundle and serves it with `workerd`, the same runtime Cloudflare uses in
+production. It is the last check before deploying:
+
+```bash
+bun run preview
+```
+
+Open http://localhost:8787.
+
+`bun dev` is still the fastest loop for day-to-day work; it runs the normal Next.js dev server on
+http://localhost:3000.
+
+### 2. Deploy
+
+```bash
+bun run deploy
+```
+
+Wrangler prints the deployed URL when it finishes. With the Worker named `iroiro` in `wrangler.jsonc`
+it is:
+
+```
+https://iroiro.<your-account-subdomain>.workers.dev
+```
+
+The account subdomain is shown in the Cloudflare dashboard under **Workers & Pages**. If you rename
+the Worker, change the `name` field and the `WORKER_SELF_REFERENCE` service binding in
+`wrangler.jsonc` together, because the binding points the Worker at itself by name.
+
+### 3. Add a custom domain (optional)
+
+The domain must be a zone on the same Cloudflare account. Add a route to `wrangler.jsonc`:
+
+```jsonc
+{
+  "routes": [{ "pattern": "iroiro.example.com", "custom_domain": true }]
+}
+```
+
+Then run `bun run deploy` again. Wrangler creates the DNS record and the certificate for you.
+
+You can also do this in the dashboard: **Workers & Pages** -> your Worker -> **Settings** ->
+**Domains & Routes** -> **Add**.
+
+### 4. Deploy from GitHub Actions (optional)
+
+Add two repository secrets:
+
+- `CLOUDFLARE_API_TOKEN` - create it at **My Profile** -> **API Tokens** with the *Edit Cloudflare
+  Workers* template
+- `CLOUDFLARE_ACCOUNT_ID` - shown on the Workers overview page
+
+Then save this as `.github/workflows/deploy.yaml`:
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bunx opennextjs-cloudflare build
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+```
+
+### Notes
+
+- `cloudflare-env.d.ts` is generated, not committed. Run `bun run cf-typegen` after changing
+  bindings in `wrangler.jsonc`.
+- `public/_headers` marks `/_next/static/*` as immutable so Cloudflare caches hashed assets for a
+  year.
+- `next/image` optimization is off (`images.unoptimized`), so the Worker needs no Images binding.
+- There is no incremental cache binding. Every route is statically prerendered, so there is nothing
+  to revalidate.
 
 ## Project Structure
 
