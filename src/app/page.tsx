@@ -1,3 +1,4 @@
+import { PaletteStudio } from "@/components/palette-studio/palette-studio";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 
@@ -14,6 +15,7 @@ export default function Home() {
           a scale — then copy CSS, Tailwind, SCSS, JSON or a plain hex list. The file never leaves
           your browser.
         </p>
+        <PaletteStudio />
       </main>
       <SiteFooter />
     </div>
