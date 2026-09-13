@@ -27,13 +27,14 @@ export const ImagePreview = ({
   onClear,
 }: ImagePreviewProps) => (
   <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:items-start sm:gap-6">
-    <figure className="flex items-center justify-center rounded-lg border bg-muted p-2">
+    {/* min-h keeps the column from collapsing and reflowing when the image lands. */}
+    <figure className="flex min-h-48 min-w-0 items-center justify-center rounded-lg border bg-muted p-2">
       {/* A user's own file, held as an object URL: nothing for the image optimizer to do. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
         alt={fileName ? `Preview of ${fileName}` : "Preview of the image you dropped"}
-        className="max-h-64 w-auto rounded-sm object-contain"
+        className="max-h-64 w-auto max-w-full rounded-sm object-contain"
       />
     </figure>
 
