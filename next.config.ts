@@ -1,4 +1,3 @@
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -11,9 +10,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-// Only `next dev` needs the Cloudflare bindings shim. Calling it during a build
-// starts a miniflare instance that outlives the build process.
-if (process.env.NODE_ENV === "development") {
-  initOpenNextCloudflareForDev();
-}
