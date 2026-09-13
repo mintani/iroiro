@@ -9,7 +9,7 @@ const STEPS: [string, string][] = [
   ],
   [
     "Export",
-    "Take the hex codes, a contrast-checked theme, harmonies and a ramp as CSS, Tailwind, SCSS or JSON.",
+    "Copy the contrast-checked theme as CSS, Tailwind, SCSS or JSON, or the palette as a hex list.",
   ],
 ];
 
