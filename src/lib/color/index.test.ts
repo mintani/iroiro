@@ -5,6 +5,7 @@ import * as color from "@/lib/color";
 const EXPECTED = [
   "clampOklchToGamut",
   "clampRgb",
+  "contrastGrade",
   "contrastRatio",
   "deltaE76",
   "deltaEOk",
