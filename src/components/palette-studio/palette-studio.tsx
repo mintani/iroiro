@@ -122,6 +122,10 @@ export const PaletteStudio = () => {
               <div className="grid gap-8">
                 <div>
                   <StudioSubhead title="Theme" meta="11 tokens" />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Built from the whole palette. The base color drives the harmonies, the scale and
+                    the text colors below.
+                  </p>
                   <ThemeSuggestion
                     theme={theme}
                     mode={mode}
