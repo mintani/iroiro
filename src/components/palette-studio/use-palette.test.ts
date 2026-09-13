@@ -1,5 +1,5 @@
 import { usePalette } from "@/components/palette-studio/use-palette";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, createEvent, fireEvent, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { loadImageData, createSampleImageFile } = vi.hoisted(() => ({
@@ -79,6 +79,36 @@ describe("usePalette", () => {
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.error).toBeNull();
     expect(result.current.palette.length).toBeGreaterThan(0);
+  });
+
+  it("takes a drop that missed every drop target", async () => {
+    loadImageData.mockResolvedValue(OPAQUE);
+    const { result } = renderHook(() => usePalette());
+    const event = createEvent.drop(document.body, {
+      dataTransfer: { files: [imageFile("dropped.png")] },
+    });
+
+    act(() => {
+      fireEvent(document.body, event);
+    });
+
+    expect(event.defaultPrevented).toBe(true);
+    await waitFor(() => expect(result.current.fileName).toBe("dropped.png"));
+  });
+
+  it("leaves a drop a target already handled alone", () => {
+    loadImageData.mockResolvedValue(OPAQUE);
+    renderHook(() => usePalette());
+    const event = createEvent.drop(document.body, {
+      dataTransfer: { files: [imageFile("dropped.png")] },
+    });
+    event.preventDefault();
+
+    act(() => {
+      fireEvent(document.body, event);
+    });
+
+    expect(loadImageData).not.toHaveBeenCalled();
   });
 
   it("drops a sample that is drawn after the visitor dropped their own image", async () => {

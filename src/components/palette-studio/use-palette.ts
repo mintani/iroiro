@@ -195,6 +195,28 @@ export const usePalette = (): PaletteStudioState => {
     return () => document.removeEventListener("paste", onPaste);
   }, [open]);
 
+  // A drop that misses the drop targets would otherwise navigate the tab to the file and lose the
+  // palette, so every drop on the page is taken here. A target that already handled the drop
+  // marked the event, which is what keeps the file from being loaded twice.
+  useEffect(() => {
+    const onDragOver = (event: DragEvent) => event.preventDefault();
+    const onDrop = (event: DragEvent) => {
+      const handled = event.defaultPrevented;
+      event.preventDefault();
+      if (handled) return;
+      const dropped = Array.from(event.dataTransfer?.files ?? [])[0];
+      if (dropped) open(dropped);
+      else rejectEmptyDrop();
+    };
+
+    window.addEventListener("dragover", onDragOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragover", onDragOver);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, [open, rejectEmptyDrop]);
+
   const safeBaseIndex = palette.length > 0 ? Math.min(baseIndex, palette.length - 1) : 0;
 
   return {
