@@ -61,3 +61,13 @@ export const ensureContrast = (fg: Rgb, bg: Rgb, target = 4.5): Rgb => {
   const away = rgbToOklch(bg).l >= 0.5 ? 0 : 1;
   return search(away) ?? search(1 - away) ?? readableOn(bg);
 };
+
+/** The strongest WCAG level a pair clears, or `"fail"` when it misses AA. */
+export type ContrastGrade = "AAA" | "AA" | "fail";
+
+/** Grades a foreground on a background: AAA at 7:1, AA at 4.5:1, or 3:1 each when `large`. */
+export const contrastGrade = (fg: Rgb, bg: Rgb, options?: { large?: boolean }): ContrastGrade => {
+  if (meetsAAA(fg, bg, options)) return "AAA";
+  if (meetsAA(fg, bg, options)) return "AA";
+  return "fail";
+};

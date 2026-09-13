@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  contrastGrade,
   contrastRatio,
   ensureContrast,
   meetsAA,
@@ -130,5 +131,25 @@ describe("ensureContrast", () => {
     const bg = hexToRgb("#767676") as Rgb;
     const fixed = ensureContrast(hexToRgb("#767676") as Rgb, bg, 21);
     expect([BLACK, WHITE]).toContainEqual(fixed);
+  });
+});
+
+describe("contrastGrade", () => {
+  const WHITE_BG: Rgb = [255, 255, 255];
+
+  it("grades black on white as AAA", () => {
+    expect(contrastGrade([0, 0, 0], WHITE_BG)).toBe("AAA");
+  });
+
+  it("grades a 4.5 to 7 ratio as AA", () => {
+    expect(contrastGrade(hexToRgb("#767676") as Rgb, WHITE_BG)).toBe("AA");
+  });
+
+  it("fails a pair below 4.5", () => {
+    expect(contrastGrade(hexToRgb("#8a8a8a") as Rgb, WHITE_BG)).toBe("fail");
+  });
+
+  it("is lenient on large text", () => {
+    expect(contrastGrade(hexToRgb("#8a8a8a") as Rgb, WHITE_BG, { large: true })).toBe("AA");
   });
 });
