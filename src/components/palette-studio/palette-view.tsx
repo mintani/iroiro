@@ -72,10 +72,19 @@ export const PaletteView = ({ palette, baseIndex, onSelect }: PaletteViewProps) 
                     />
                   ) : null}
                 </span>
-                <span className="flex items-baseline justify-between gap-2 px-2.5 py-2">
-                  <span className="font-mono text-xs">{hex}</span>
-                  <span className="label-mono text-muted-foreground tabular-nums">
-                    {formatShare(entry.share)}
+                <span className="block px-2.5 py-2">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-xs">{hex}</span>
+                    <span className="label-mono text-muted-foreground tabular-nums">
+                      {formatShare(entry.share)}
+                    </span>
+                  </span>
+                  {/* A tooltip is all a pointer gets these from, which leaves out touch. Where
+                      there is room, the card just shows them. */}
+                  <span className="mt-1 hidden flex-col font-mono text-[10px] leading-snug text-muted-foreground sm:flex">
+                    <span>{formatRgb(entry.color)}</span>
+                    <span>{formatHsl(entry.color)}</span>
+                    <span>{formatOklch(entry.color)}</span>
                   </span>
                 </span>
               </button>
