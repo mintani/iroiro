@@ -14,6 +14,7 @@
     "lint:fix": "oxlint --fix src",
     "preview": "next build && next start",
     "start": "next start",
+    "test": "vitest --run",
     "typecheck": "tsgo --noEmit",
     "prepare": "lefthook install"
   },
@@ -44,12 +45,15 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.0.1",
     "lefthook": "^2.1.12",
     "oxfmt": "^0.67.0",
     "oxlint": "^1.82.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   },
   "packageManager": "bun@1.3.13"
 }
