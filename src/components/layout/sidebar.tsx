@@ -2,7 +2,7 @@
 
 import { ThemeToggle } from "@/components/misc/theme-toggle";
 import { cn } from "@/lib/utils";
-import { Home, Info, LayoutDashboard } from "lucide-react";
+import { Home, Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,13 +12,11 @@ export const Sidebar = () => {
   const icons = {
     Home: <Home className="size-8" />,
     About: <Info className="size-8" />,
-    Dashboard: <LayoutDashboard className="size-8" />,
   };
 
   const navItems = [
     { href: "/", label: "Home", icon: icons.Home },
     { href: "/about", label: "About", icon: icons.About },
-    { href: "/dashboard", label: "Dashboard", icon: icons.Dashboard },
   ];
 
   const isActive = (href: string) => {

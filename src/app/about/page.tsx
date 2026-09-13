@@ -148,12 +148,6 @@ export default function AboutPage() {
                   Go to App
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="/dashboard">
-                  <Sparkles className="mr-2 size-4" />
-                  View Dashboard
-                </Link>
-              </Button>
             </div>
           </CardContent>
         </Card>
