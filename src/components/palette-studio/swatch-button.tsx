@@ -22,6 +22,7 @@ export const SwatchButton = ({ color, name, className, onClick, children }: Swat
     <button
       type="button"
       aria-label={name ? `Copy ${hex}, ${name}` : `Copy ${hex}`}
+      title={name ? `${hex} — ${name}` : hex}
       onClick={() => {
         onClick?.();
         void copyWithToast(hex);
