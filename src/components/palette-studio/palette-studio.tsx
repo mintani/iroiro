@@ -14,7 +14,7 @@ import { useDropTarget } from "@/components/palette-studio/use-drop-target";
 import { usePalette } from "@/components/palette-studio/use-palette";
 import { useThemePreview } from "@/components/palette-studio/use-theme-preview";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { formatHex, suggestTheme } from "@/lib/color";
+import { formatHex, SLOTS, suggestTheme } from "@/lib/color";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { useMemo, useRef, useState } from "react";
@@ -118,7 +118,7 @@ export const PaletteStudio = () => {
             <StudioSection title="Suggestions" meta={`base ${formatHex(studio.baseColor)}`}>
               <div className="grid gap-8">
                 <div>
-                  <StudioSubhead title="Theme" meta="11 tokens" />
+                  <StudioSubhead title="Theme" meta={`${SLOTS.length} tokens`} />
                   <p className="mt-1 text-xs text-muted-foreground">
                     Built from the whole palette. The base color drives the harmonies, the scale and
                     the text colors below.

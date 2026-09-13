@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { hexToRgb } from "@/lib/color/convert";
-import { toCssVariables, toHexList, toJson, toScss, toTailwindTheme } from "@/lib/color/export";
+import {
+  SLOTS,
+  toCssVariables,
+  toHexList,
+  toJson,
+  toScss,
+  toTailwindTheme,
+} from "@/lib/color/export";
 import { suggestTheme } from "@/lib/color/theme";
 import type { PaletteEntry, Theme } from "@/lib/color/types";
 
@@ -28,6 +35,17 @@ const NAMES = [
 ];
 
 const HEX = /^#[0-9a-f]{6}$/;
+
+describe("SLOTS", () => {
+  it("names every theme slot once, in the order the exporters write them", () => {
+    expect(SLOTS.map(([, name]) => name)).toEqual(NAMES);
+    expect(new Set(SLOTS.map(([slot]) => slot)).size).toBe(SLOTS.length);
+  });
+
+  it("points every entry at a slot the theme actually has", () => {
+    for (const [slot] of SLOTS) expect(THEME[slot]).toHaveLength(3);
+  });
+});
 
 describe("toCssVariables", () => {
   it("emits a root block with one variable per slot", () => {

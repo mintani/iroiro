@@ -7,8 +7,11 @@ export type ColorFormat = "hex" | "oklch";
 /** Options for `toCssVariables`. */
 export type CssVariablesOptions = { selector?: string; format?: ColorFormat };
 
-/** The theme slots in the order every exporter emits them, paired with their CSS variable name. */
-const SLOTS: [keyof Theme, string][] = [
+/**
+ * The theme slots in the order every exporter emits them, paired with their CSS variable name.
+ * The studio reads the same table, so a slot is added in one place.
+ */
+export const SLOTS: [keyof Theme, string][] = [
   ["background", "background"],
   ["foreground", "foreground"],
   ["primary", "primary"],

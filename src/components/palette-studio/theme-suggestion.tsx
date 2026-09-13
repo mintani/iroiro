@@ -5,25 +5,11 @@ import { SwatchButton } from "@/components/palette-studio/swatch-button";
 import { Badge } from "@/components/ui/badge";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { contrastGrade, contrastRatio, formatHex, type Theme } from "@/lib/color";
+import { contrastGrade, contrastRatio, formatHex, SLOTS, type Theme } from "@/lib/color";
 import { Eye } from "lucide-react";
 
 /** Light or dark, as `suggestTheme` takes it. */
 export type ThemeMode = "light" | "dark";
-
-const SLOTS: [keyof Theme, string][] = [
-  ["background", "background"],
-  ["foreground", "foreground"],
-  ["primary", "primary"],
-  ["primaryForeground", "primary-foreground"],
-  ["secondary", "secondary"],
-  ["secondaryForeground", "secondary-foreground"],
-  ["accent", "accent"],
-  ["accentForeground", "accent-foreground"],
-  ["muted", "muted"],
-  ["mutedForeground", "muted-foreground"],
-  ["border", "border"],
-];
 
 const PAIRS: [keyof Theme, keyof Theme, string][] = [
   ["foreground", "background", "text on background"],
@@ -118,7 +104,7 @@ export const ThemeSuggestion = ({
       </figcaption>
       <p className="mt-3 text-base font-medium">Tokens, not screenshots</p>
       <p className="mt-1.5 text-sm">
-        Every surface here is one of the eleven slots on the left, and every label was picked to
+        Every surface here is one of the slots listed on the left, and every label was picked to
         clear WCAG AA on the surface behind it.
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-2">

@@ -59,6 +59,9 @@ const EXPECTED = [
   "xyzToRgb",
 ];
 
+/** Runtime symbols the barrel exposes that are tables rather than functions. */
+const EXPECTED_TABLES = ["SLOTS"];
+
 describe("color barrel", () => {
   it("re-exports every function in the library", () => {
     const missing = EXPECTED.filter((name) => typeof Reflect.get(color, name) !== "function");
@@ -66,7 +69,7 @@ describe("color barrel", () => {
   });
 
   it("exposes nothing beyond the expected surface", () => {
-    expect(Object.keys(color).sort()).toEqual([...EXPECTED].sort());
+    expect(Object.keys(color).sort()).toEqual([...EXPECTED, ...EXPECTED_TABLES].sort());
   });
 
   it("works end to end from the barrel alone", () => {
