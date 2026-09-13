@@ -1,5 +1,4 @@
 "use client";
-// @ts-nocheck
 import React from "react";
 import * as THREE from "three";
 
@@ -10,6 +9,14 @@ type SphereProps = {
   pointSize?: number;
   pointOpacity?: number;
 } & React.HTMLAttributes<HTMLDivElement>;
+
+type ThreeRefs = {
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  group: THREE.Group;
+  points?: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
+};
 
 const parseColorToRGB = (value: RGB | string): RGB => {
   if (Array.isArray(value)) return value;
@@ -75,33 +82,6 @@ export const Sphere: React.FC<SphereProps> = ({
   ...rest
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  type MinimalRenderer = {
-    setPixelRatio: (n: number) => void;
-    setSize: (w: number, h: number) => void;
-    dispose: () => void;
-    domElement: HTMLElement;
-  };
-  type MinimalCamera = {
-    position: { set: (x: number, y: number, z: number) => void; z: number };
-    aspect: number;
-    updateProjectionMatrix: () => void;
-  };
-  type MinimalGroup = {
-    rotation: { x: number; y: number };
-    add: (obj: unknown) => void;
-    remove: (obj: unknown) => void;
-  };
-  type MinimalPoints = {
-    geometry: { dispose: () => void };
-    material: { dispose: () => void };
-  };
-  type ThreeRefs = {
-    renderer: MinimalRenderer;
-    scene: unknown;
-    camera: MinimalCamera;
-    group: MinimalGroup;
-    points?: MinimalPoints;
-  };
   const threeRef = React.useRef<ThreeRefs | null>(null);
 
   const draggingRef = React.useRef(false);
