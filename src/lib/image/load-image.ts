@@ -61,13 +61,16 @@ const decodeBitmap = async (file: File): Promise<ImageBitmap> => {
   const size = fitWithin(source.width, source.height);
   if (size.width === source.width && size.height === source.height) return source;
 
-  const scaled = await createImageBitmap(source, {
-    resizeWidth: size.width,
-    resizeHeight: size.height,
-    resizeQuality: "high",
-  });
-  source.close();
-  return scaled;
+  try {
+    return await createImageBitmap(source, {
+      resizeWidth: size.width,
+      resizeHeight: size.height,
+      resizeQuality: "high",
+    });
+  } finally {
+    // The full size bitmap is never handed out, so it is released even when the resize throws.
+    source.close();
+  }
 };
 
 /** Decodes through an `<img>`, for browsers without `createImageBitmap` or with a codec it rejects. */
@@ -92,13 +95,20 @@ const decodeElement = (file: File): Promise<HTMLImageElement> =>
  */
 export const loadImageData = async (file: File): Promise<ImageData> => {
   if (typeof createImageBitmap === "function") {
+    let bitmap: ImageBitmap | null = null;
     try {
-      const bitmap = await decodeBitmap(file);
-      const data = readPixels(bitmap, { width: bitmap.width, height: bitmap.height });
-      bitmap.close();
-      return data;
+      bitmap = await decodeBitmap(file);
     } catch {
-      // Some codecs decode in an <img> but not in createImageBitmap, so fall through.
+      // Some codecs decode in an <img> but not in createImageBitmap, so fall through. Only the
+      // decode is forgiven here: a canvas that cannot be read is worth reporting.
+    }
+
+    if (bitmap) {
+      try {
+        return readPixels(bitmap, { width: bitmap.width, height: bitmap.height });
+      } finally {
+        bitmap.close();
+      }
     }
   }
 

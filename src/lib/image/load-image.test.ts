@@ -1,5 +1,10 @@
-import { fitWithin, MAX_IMAGE_BYTES, validateImageFile } from "@/lib/image/load-image";
-import { describe, expect, it } from "vitest";
+import {
+  fitWithin,
+  loadImageData,
+  MAX_IMAGE_BYTES,
+  validateImageFile,
+} from "@/lib/image/load-image";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const fileOf = (type: string, size: number, name = "photo.png"): File => {
   const file = new File([new Uint8Array(1)], name, { type });
@@ -39,5 +44,56 @@ describe("fitWithin", () => {
 
   it("never returns a zero edge", () => {
     expect(fitWithin(1000, 1, 512)).toEqual({ width: 512, height: 1 });
+  });
+});
+
+/** An `<img>` that always fails, so the fallback path settles instead of waiting for a load. */
+class FailingImage {
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+
+  set src(_url: string) {
+    queueMicrotask(() => this.onerror?.());
+  }
+}
+
+const stubDecoding = (bitmaps: ImageBitmap[]) => {
+  const createBitmap = vi.fn<(source: Blob | ImageBitmap) => Promise<ImageBitmap>>(() => {
+    const next = bitmaps.shift();
+    return next ? Promise.resolve(next) : Promise.reject(new Error("this codec resists resizing"));
+  });
+  vi.stubGlobal("createImageBitmap", createBitmap);
+  vi.stubGlobal("Image", FailingImage);
+  URL.createObjectURL = vi.fn<typeof URL.createObjectURL>(() => "blob:load-image");
+  URL.revokeObjectURL = vi.fn<typeof URL.revokeObjectURL>();
+  return createBitmap;
+};
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe("loadImageData", () => {
+  it("closes the bitmap when reading its pixels fails", async () => {
+    const close = vi.fn<() => void>();
+    stubDecoding([{ width: 8, height: 8, close }]);
+
+    // jsdom hands out no 2d context, which is exactly the case this guards. The failure is
+    // reported rather than retried through an <img>, which would fail the same way.
+    await expect(loadImageData(fileOf("image/png", 1024))).rejects.toThrow(
+      "This browser cannot read pixels from a canvas."
+    );
+    expect(close).toHaveBeenCalledOnce();
+  });
+
+  it("closes the full size bitmap when the resize fails", async () => {
+    const close = vi.fn<() => void>();
+    stubDecoding([{ width: 2048, height: 1024, close }]);
+
+    // The resize throws, so the load falls back to an <img>, which fails in jsdom too.
+    await expect(loadImageData(fileOf("image/png", 1024))).rejects.toThrow(
+      "That image could not be decoded."
+    );
+    expect(close).toHaveBeenCalledOnce();
   });
 });
