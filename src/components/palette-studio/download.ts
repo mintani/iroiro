@@ -21,7 +21,7 @@ export const downloadText = (text: string, format: ExportFormat): void => {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = exportFileName(format);
-  document.body.append(anchor);
+  document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
   // Firefox cancels the download if the URL is revoked in the same task.
