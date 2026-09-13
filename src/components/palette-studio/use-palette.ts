@@ -63,7 +63,8 @@ export const usePalette = (): PaletteStudioState => {
   const [colorCount, setColorCount] = useState(DEFAULT_COLORS);
   const [baseIndex, setBaseIndex] = useState(0);
 
-  const objectUrl = useRef<string | null>(null);
+  /** Every object URL this hook has minted, newest last. */
+  const urls = useRef<string[]>([]);
   const request = useRef(0);
 
   const deferredCount = useDeferredValue(colorCount);
@@ -72,47 +73,58 @@ export const usePalette = (): PaletteStudioState => {
     [pixels, deferredCount]
   );
 
-  // Revoke the object URL of the image being replaced, and of the last one on unmount.
-  const takeUrl = useCallback((next: string | null) => {
-    if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
-    objectUrl.current = next;
-  }, []);
-  useEffect(() => () => takeUrl(null), [takeUrl]);
+  // Revoking the URL of a replaced image before React commits the new one would leave the mounted
+  // <img> pointing at a dead URL, so the outgoing ones are revoked here, after the commit. A URL
+  // minted for a load that was superseded before it committed is dropped the same way.
+  useEffect(() => {
+    const live = source?.url ?? null;
+    const stale = urls.current.filter((url) => url !== live);
+    urls.current = live ? [live] : [];
+    for (const url of stale) URL.revokeObjectURL(url);
+  }, [source]);
 
-  const open = useCallback(
-    (file: File) => {
-      const invalid = validateImageFile(file);
-      // Keep whatever is on screen; the message is shown next to the drop target.
-      if (invalid) {
-        setError(invalid);
-        return;
-      }
-
-      const ticket = ++request.current;
-      setError(null);
-      setStatus("loading");
-
-      void loadImageData(file)
-        .then((image) => {
-          if (ticket !== request.current) return;
-          const sampled = samplePixels(image);
-          const url = URL.createObjectURL(file);
-          takeUrl(url);
-          startTransition(() => {
-            setSource({ name: file.name, url });
-            setPixels(sampled);
-            setBaseIndex(0);
-            setStatus("ready");
-          });
-        })
-        .catch(() => {
-          if (ticket !== request.current) return;
-          setError("That image could not be decoded. Try another file.");
-          setStatus("error");
-        });
+  // On unmount, invalidate the load in flight as well: its URL would otherwise be minted for a
+  // gone component, with nobody left to revoke it.
+  useEffect(
+    () => () => {
+      request.current++;
+      for (const url of urls.current) URL.revokeObjectURL(url);
+      urls.current = [];
     },
-    [takeUrl]
+    []
   );
+
+  const open = useCallback((file: File) => {
+    const invalid = validateImageFile(file);
+    // Keep whatever is on screen; the message is shown next to the drop target.
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+
+    const ticket = ++request.current;
+    setError(null);
+    setStatus("loading");
+
+    void loadImageData(file)
+      .then((image) => {
+        if (ticket !== request.current) return;
+        const sampled = samplePixels(image);
+        const url = URL.createObjectURL(file);
+        urls.current.push(url);
+        startTransition(() => {
+          setSource({ name: file.name, url });
+          setPixels(sampled);
+          setBaseIndex(0);
+          setStatus("ready");
+        });
+      })
+      .catch(() => {
+        if (ticket !== request.current) return;
+        setError("That image could not be decoded. Try another file.");
+        setStatus("error");
+      });
+  }, []);
 
   const openSample = useCallback(() => {
     setError(null);
@@ -127,14 +139,13 @@ export const usePalette = (): PaletteStudioState => {
 
   const clear = useCallback(() => {
     request.current++;
-    takeUrl(null);
     setSource(null);
     setPixels(null);
     setError(null);
     setBaseIndex(0);
     setColorCount(DEFAULT_COLORS);
     setStatus("empty");
-  }, [takeUrl]);
+  }, []);
 
   // A paste lands on the document, not on the drop zone, so it works wherever the caret is.
   useEffect(() => {
