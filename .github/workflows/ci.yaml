@@ -35,5 +35,7 @@ jobs:
       - name: Build
         run: bun run build
 
+      # The same OpenNext build `alchemy deploy` runs, minus the deploy. There is
+      # no wrangler config to read, so the check for one is skipped.
       - name: Build Cloudflare Workers bundle
-        run: bunx opennextjs-cloudflare build
+        run: bunx opennextjs-cloudflare build --skipWranglerConfigCheck
