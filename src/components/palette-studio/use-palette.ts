@@ -1,5 +1,6 @@
 "use client";
 
+import { useDebounced } from "@/components/palette-studio/use-debounced";
 import { extractPalette, type PaletteEntry, type Rgb, samplePixels } from "@/lib/color";
 import { loadImageData, validateImageFile } from "@/lib/image/load-image";
 import { createSampleImageFile } from "@/lib/image/sample-image";
@@ -21,6 +22,9 @@ export const MAX_COLORS = 12;
 
 /** Colors a fresh image is extracted into. */
 export const DEFAULT_COLORS = 6;
+
+/** How long the color count has to hold still before the palette is extracted again. */
+const COUNT_SETTLE_MS = 150;
 
 /** Used for harmonies and scales before an image has been read. */
 const FALLBACK_BASE: Rgb = [90, 100, 130];
@@ -56,7 +60,7 @@ export type PaletteStudioState = {
 /**
  * Owns the image and the palette derived from it: validation, decoding, sampling, extraction and
  * the object URL behind the preview. The palette is derived rather than stored, so changing the
- * color count re-extracts in a deferred render instead of blocking the slider.
+ * color count re-extracts instead of blocking the slider.
  */
 export const usePalette = (): PaletteStudioState => {
   const [status, setStatus] = useState<StudioStatus>("empty");
@@ -70,10 +74,12 @@ export const usePalette = (): PaletteStudioState => {
   const urls = useRef<string[]>([]);
   const request = useRef(0);
 
-  const deferredCount = useDeferredValue(colorCount);
+  // Extraction is synchronous and costs milliseconds, so it waits for the slider to stop moving
+  // and then for a paint: dragging from 2 to 12 extracts once, not eleven times.
+  const settledCount = useDeferredValue(useDebounced(colorCount, COUNT_SETTLE_MS));
   const palette = useMemo(
-    () => (pixels ? extractPalette(pixels, { k: deferredCount }) : EMPTY_PALETTE),
-    [pixels, deferredCount]
+    () => (pixels ? extractPalette(pixels, { k: settledCount }) : EMPTY_PALETTE),
+    [pixels, settledCount]
   );
 
   // Revoking the URL of a replaced image before React commits the new one would leave the mounted
@@ -190,7 +196,7 @@ export const usePalette = (): PaletteStudioState => {
     fileName: source?.name ?? null,
     previewUrl: source?.url ?? null,
     palette,
-    extracting: status === "loading" || colorCount !== deferredCount,
+    extracting: status === "loading" || colorCount !== settledCount,
     colorCount,
     baseIndex: safeBaseIndex,
     baseColor: palette[safeBaseIndex]?.color ?? FALLBACK_BASE,
