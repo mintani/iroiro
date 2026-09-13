@@ -44,13 +44,8 @@ export default function AboutPage() {
     { name: "TypeScript", category: "Language" },
     { name: "Tailwind CSS", category: "Styling" },
     { name: "shadcn/ui", category: "UI Components" },
-    { name: "Better Auth", category: "Authentication" },
-    { name: "Prisma", category: "ORM" },
-    { name: "PostgreSQL", category: "Database" },
-    { name: "Hono", category: "API" },
     { name: "DND Kit", category: "Drag & Drop" },
     { name: "Three.js", category: "3D Graphics" },
-    { name: "React Three Fiber", category: "3D" },
   ];
 
   return (
