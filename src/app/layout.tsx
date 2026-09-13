@@ -34,6 +34,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* The Workers bundle is built with esbuild keepNames, which rewrites the function
+            next-themes stringifies into its pre-paint script. Without this shim that script
+            throws in the browser and dark mode only lands after hydration. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "window.__name=window.__name||function(fn){return fn}",
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <Providers>
           {children}
