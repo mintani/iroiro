@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    branches: [main]
   push:
     branches: [main]
 
@@ -12,39 +13,29 @@ concurrency:
 jobs:
   build-check:
     runs-on: ubuntu-latest
-    env:
-      # Dummy envs to satisfy build-time validation
-      NEXT_PUBLIC_BETTER_AUTH_URL: "http://localhost:3000/api/auth"
-      BETTER_AUTH_SECRET: "dummy"
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/app?schema=public"
-      GITHUB_ID: "dummy"
-      GITHUB_SECRET: "dummy"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
-      - name: Format check
-        run: pnpm fmt:check
+      - name: Lint and format check
+        run: bun run check
 
-      - name: ESLint
-        run: pnpm lint
+      - name: Test
+        run: bun run test
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: bun run typecheck
 
       - name: Build
-        run: pnpm build
+        run: bun run build
+
+      # The same OpenNext build `alchemy deploy` runs, minus the deploy. There is
+      # no wrangler config to read, so the check for one is skipped.
+      - name: Build Cloudflare Workers bundle
+        run: bunx opennextjs-cloudflare build --skipWranglerConfigCheck
